@@ -1,0 +1,19 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(gh auth *)",
+      "Bash(gh repo *)",
+      "Bash(git -C \"c:/Users/Drest/Desktop/Clients/Fidden\" init)",
+      "Bash(git -C \"c:/Users/Drest/Desktop/Clients/Fidden\" remote -v)",
+      "Bash(npx create-next-app@latest . --typescript --no-tailwind --eslint --app --no-src-dir --import-alias \"@/*\" --yes)",
+      "Bash(npx create-next-app@latest . --typescript --no-tailwind --eslint --app --no-src-dir --import-alias \"@/*\" --yes --name fidden)",
+      "Read(//c/Users/Drest/Desktop/**)",
+      "Bash(npx create-next-app@latest fidden-temp --typescript --no-tailwind --eslint --app --no-src-dir --import-alias \"@/*\" --yes)",
+      "Bash(cp -r \"c:/Users/Drest/Desktop/fidden-temp/.\" \"c:/Users/Drest/Desktop/Clients/Fidden/\" --exclude=\".git\")",
+      "Bash(robocopy \"c:\\\\Users\\\\Drest\\\\Desktop\\\\fidden-temp\" \"c:\\\\Users\\\\Drest\\\\Desktop\\\\Clients\\\\Fidden\" /E /XD .git /NFL /NDL /NJH)",
+      "Bash(robocopy \"c:\\\\Users\\\\Drest\\\\Desktop\\\\fidden-temp\" \"c:\\\\Users\\\\Drest\\\\Desktop\\\\Clients\\\\Fidden\" /E /XD \".git\" /NFL /NDL /NJH /NJS)",
+      "Bash(powershell -Command \"Copy-Item 'C:\\\\Users\\\\Drest\\\\Desktop\\\\fidden-temp\\\\*' -Destination 'C:\\\\Users\\\\Drest\\\\Desktop\\\\Clients\\\\Fidden\\\\' -Recurse -Force -Exclude '.git'\")",
+      "Bash(npx tsc *)"
+    ]
+  }
+}
