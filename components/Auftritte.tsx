@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import RevealSection from "./RevealSection";
-import { getGigs, formatGigDate, type Gig } from "@/lib/gigs";
+import { formatGigDate, DEFAULT_GIGS, type Gig } from "@/lib/gigs";
 
 function GigCard({ gig, index }: { gig: Gig; index: number }) {
   const { day, month, year } = formatGigDate(gig.date);
@@ -31,7 +31,7 @@ function GigCard({ gig, index }: { gig: Gig; index: number }) {
             Tickets →
           </a>
         ) : (
-          <Link href="#buchung" className="gig-link">Anfragen →</Link>
+          <Link href="#kontakt" className="gig-link">Anfragen →</Link>
         )}
       </div>
     </RevealSection>
@@ -42,7 +42,10 @@ export default function Auftritte() {
   const [gigs, setGigs] = useState<Gig[]>([]);
 
   useEffect(() => {
-    setGigs(getGigs());
+    fetch("/api/gigs")
+      .then(r => r.json())
+      .then(setGigs)
+      .catch(() => setGigs(DEFAULT_GIGS));
   }, []);
 
   return (

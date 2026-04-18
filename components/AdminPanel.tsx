@@ -2,8 +2,8 @@
 
 import { useState, useEffect } from "react";
 import Image from "next/image";
-import { getBookableDates, setBookableDates, toISO, today } from "@/lib/bookings";
-import { getGigs, setGigs, formatGigDate, DEFAULT_GIGS, type Gig } from "@/lib/gigs";
+import { toISO, today } from "@/lib/bookings";
+import { formatGigDate, DEFAULT_GIGS, type Gig } from "@/lib/gigs";
 
 const CREDENTIALS = { user: "Fiete_Rasser", pass: "12345" };
 const DAY_LABELS   = ["Mo", "Di", "Mi", "Do", "Fr", "Sa", "So"];
@@ -55,11 +55,20 @@ function CalendarTab() {
   const [year, setYear]   = useState(now.getFullYear());
   const [month, setMonth] = useState(now.getMonth());
 
-  useEffect(() => { setBookable(getBookableDates()); }, []);
+  useEffect(() => {
+    fetch("/api/bookings").then(r => r.json()).then(setBookable).catch(() => setBookable([]));
+  }, []);
 
   const toggle = (iso: string) => { setSaved(false); setBookable(p => p.includes(iso) ? p.filter(d => d !== iso) : [...p, iso]); };
-  const save   = () => { setBookableDates(bookable); setSaved(true); setTimeout(() => setSaved(false), 2500); };
-  const clear  = () => { if (confirm("Alle buchbaren Tage löschen?")) { setBookable([]); setBookableDates([]); } };
+  const save   = () => {
+    fetch("/api/bookings", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(bookable) })
+      .then(() => { setSaved(true); setTimeout(() => setSaved(false), 2500); });
+  };
+  const clear  = () => {
+    if (!confirm("Alle buchbaren Tage löschen?")) return;
+    setBookable([]);
+    fetch("/api/bookings", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify([]) });
+  };
 
   const prev = () => month === 0 ? (setMonth(11), setYear(y => y - 1)) : setMonth(m => m - 1);
   const next = () => month === 11 ? (setMonth(0),  setYear(y => y + 1)) : setMonth(m => m + 1);
@@ -121,13 +130,14 @@ function GigsTab() {
   const [uploading, setUploading] = useState(false);
   const [uploadErr, setUploadErr] = useState("");
 
-  useEffect(() => { setGigsState(getGigs()); }, []);
+  useEffect(() => {
+    fetch("/api/gigs").then(r => r.json()).then(setGigsState).catch(() => {});
+  }, []);
 
   const save = (updated: Gig[]) => {
-    setGigs(updated);
     setGigsState(updated);
-    setSaved(true);
-    setTimeout(() => setSaved(false), 2000);
+    fetch("/api/gigs", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(updated) })
+      .then(() => { setSaved(true); setTimeout(() => setSaved(false), 2000); });
   };
 
   const handleSubmit = (e: React.FormEvent) => {

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { getBookableDates, toISO, today } from "@/lib/bookings";
+import { toISO, today } from "@/lib/bookings";
 
 const DAY_LABELS = ["Mo", "Di", "Mi", "Do", "Fr", "Sa", "So"];
 const MONTH_NAMES = ["Januar","Februar","März","April","Mai","Juni","Juli","August","September","Oktober","November","Dezember"];
@@ -12,7 +12,12 @@ export default function MiniAvailabilityCalendar() {
   const [year, setYear]   = useState(now.getFullYear());
   const [month, setMonth] = useState(now.getMonth());
 
-  useEffect(() => { setBookable(getBookableDates()); }, []);
+  useEffect(() => {
+    fetch("/api/bookings")
+      .then(r => r.json())
+      .then(setBookable)
+      .catch(() => setBookable([]));
+  }, []);
 
   const prev = () => month === 0  ? (setMonth(11), setYear(y => y - 1)) : setMonth(m => m - 1);
   const next = () => month === 11 ? (setMonth(0),  setYear(y => y + 1)) : setMonth(m => m + 1);

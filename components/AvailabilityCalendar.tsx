@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { getBookableDates, toISO, today } from "@/lib/bookings";
+import { toISO, today } from "@/lib/bookings";
 
 const DAY_LABELS = ["Mo", "Di", "Mi", "Do", "Fr", "Sa", "So"];
 const MONTH_NAMES = [
@@ -20,7 +20,10 @@ export default function AvailabilityCalendar() {
   const [month, setMonth] = useState(now.getMonth());
 
   useEffect(() => {
-    setBookable(getBookableDates());
+    fetch("/api/bookings")
+      .then(r => r.json())
+      .then(setBookable)
+      .catch(() => setBookable([]));
   }, []);
 
   const prevMonth = () => {
