@@ -724,46 +724,24 @@ button { font-family: inherit; }
 .footer {
   background: var(--surface);
   border-top: 1px solid var(--accent);
-  padding: 3.5rem 3rem 2rem;
-  display: flex;
-  flex-direction: column;
-  gap: 2.5rem;
-}
-.footer-contact {
-  display: flex;
-  flex-direction: column;
-  gap: .6rem;
-}
-.footer-contact-label {
-  font-size: .55rem;
-  letter-spacing: .3em;
-  color: var(--muted);
-  text-transform: uppercase;
-}
-.footer-contact-mail {
-  font-family: var(--font-bebas), 'Bebas Neue', sans-serif;
-  font-size: clamp(1.8rem, 4vw, 3rem);
-  letter-spacing: .06em;
-  color: var(--accent);
-  text-decoration: none;
-  transition: opacity .2s;
-}
-.footer-contact-mail:hover { opacity: .65; }
-.footer-contact-sub {
-  font-size: .58rem;
-  letter-spacing: .15em;
-  color: var(--muted);
-  text-transform: uppercase;
-}
-.footer-bottom {
+  padding: 2rem 3rem;
   display: flex;
   align-items: center;
   justify-content: space-between;
   flex-wrap: wrap;
   gap: 1rem;
-  border-top: 1px solid var(--border);
-  padding-top: 1.5rem;
 }
+.kontakt-mail {
+  font-family: var(--font-bebas), 'Bebas Neue', sans-serif;
+  font-size: clamp(1.6rem, 4vw, 2.8rem);
+  letter-spacing: .06em;
+  color: var(--accent);
+  text-decoration: none;
+  display: block;
+  margin-bottom: .5rem;
+  transition: opacity .2s;
+}
+.kontakt-mail:hover { opacity: .6; }
 .footer-copy {
   font-size: .58rem;
   letter-spacing: .18em;
@@ -1137,8 +1115,7 @@ button { font-family: inherit; }
   .gallery-grid .tall { grid-row: span 1; }
   .booking-grid { grid-template-columns: 1fr; gap: 3rem; }
   .f-row { grid-template-columns: 1fr; }
-  .footer { padding: 2rem 1.5rem 1.5rem; }
-  .footer-bottom { flex-direction: column; align-items: center; text-align: center; }
+  .footer { padding: 1.5rem; flex-direction: column; align-items: center; text-align: center; }
 }
 @media (max-width: 500px) {
   .gallery-grid { grid-template-columns: 1fr; grid-auto-rows: 240px; }

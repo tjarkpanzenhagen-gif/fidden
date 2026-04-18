@@ -22,7 +22,7 @@ export default function Nav() {
         <Link href="#gallery"   onClick={close}>Gallery</Link>
         <Link href="#sounds"    onClick={close}>Sounds</Link>
         <Link href="#verfuegbarkeit" onClick={close}>Verfügbar</Link>
-        <a href="mailto:booking@djfidden.de" onClick={close}>Kontakt</a>
+        <Link href="#kontakt" onClick={close}>Kontakt</Link>
       </div>
 
       <nav className={`nav${scrolled ? " scrolled" : ""}`}>
@@ -34,7 +34,7 @@ export default function Nav() {
           <li><Link href="#gallery">Gallery</Link></li>
           <li><Link href="#sounds">Sounds</Link></li>
           <li><Link href="#verfuegbarkeit">Verfügbar</Link></li>
-          <li><a href="mailto:booking@djfidden.de">Kontakt</a></li>
+          <li><Link href="#kontakt">Kontakt</Link></li>
         </ul>
         <button
           className={`hamburger${open ? " open" : ""}`}

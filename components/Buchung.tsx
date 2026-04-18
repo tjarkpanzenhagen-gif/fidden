@@ -12,12 +12,18 @@ export default function Buchung() {
   };
 
   return (
-    <section className="section buchung-bg" id="buchung">
+    <section className="section buchung-bg" id="kontakt">
       <div className="container">
         <RevealSection from="left"><p className="s-label">— kontakt —</p></RevealSection>
-        <RevealSection from="left" delay={60}><h2 className="s-title">BUCHUNG</h2></RevealSection>
+        <RevealSection from="left" delay={60}><h2 className="s-title">KONTAKT</h2></RevealSection>
 
-        <div className="booking-grid">
+        <RevealSection from="left" delay={80}>
+          <a href="mailto:booking@djfidden.de" className="kontakt-mail">
+            booking@djfidden.de
+          </a>
+        </RevealSection>
+
+        <div className="booking-grid" style={{ marginTop: "2.5rem" }}>
           <RevealSection from="left" delay={100}>
             <div className="booking-aside">
               <p>
