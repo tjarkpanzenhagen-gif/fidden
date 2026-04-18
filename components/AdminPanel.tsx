@@ -50,7 +50,8 @@ function Login({ onLogin }: { onLogin: () => void }) {
 /* ── Calendar Tab ── */
 function CalendarTab() {
   const [bookable, setBookable] = useState<string[]>([]);
-  const [saved, setSaved] = useState(false);
+  const [saved, setSaved]       = useState(false);
+  const [saveErr, setSaveErr]   = useState("");
   const now = new Date();
   const [year, setYear]   = useState(now.getFullYear());
   const [month, setMonth] = useState(now.getMonth());
@@ -59,10 +60,12 @@ function CalendarTab() {
     fetch("/api/bookings").then(r => r.json()).then(setBookable).catch(() => setBookable([]));
   }, []);
 
-  const toggle = (iso: string) => { setSaved(false); setBookable(p => p.includes(iso) ? p.filter(d => d !== iso) : [...p, iso]); };
+  const toggle = (iso: string) => { setSaved(false); setSaveErr(""); setBookable(p => p.includes(iso) ? p.filter(d => d !== iso) : [...p, iso]); };
   const save   = () => {
+    setSaveErr("");
     fetch("/api/bookings", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(bookable) })
-      .then(() => { setSaved(true); setTimeout(() => setSaved(false), 2500); });
+      .then(async r => { if (!r.ok) throw new Error(); setSaved(true); setTimeout(() => setSaved(false), 2500); })
+      .catch(() => setSaveErr("Speichern fehlgeschlagen — Vercel KV noch nicht verbunden?"));
   };
   const clear  = () => {
     if (!confirm("Alle buchbaren Tage löschen?")) return;
@@ -117,6 +120,7 @@ function CalendarTab() {
         <button className="submit-btn" onClick={save}>{saved ? "[ ✓ Gespeichert ]" : "[ Speichern ]"}</button>
         <button className="logout-btn" onClick={clear}>Alle löschen</button>
       </div>
+      {saveErr && <p className="login-error" style={{ marginTop: ".5rem" }}>{saveErr}</p>}
     </div>
   );
 }
@@ -126,7 +130,8 @@ function GigsTab() {
   const [gigs, setGigsState] = useState<Gig[]>([]);
   const [form, setForm]       = useState<Omit<Gig, "id">>(EMPTY_GIG);
   const [editing, setEditing] = useState<string | null>(null);
-  const [saved, setSaved]     = useState(false);
+  const [saved, setSaved]         = useState(false);
+  const [saveErr, setSaveErr]     = useState("");
   const [uploading, setUploading] = useState(false);
   const [uploadErr, setUploadErr] = useState("");
 
@@ -136,8 +141,14 @@ function GigsTab() {
 
   const save = (updated: Gig[]) => {
     setGigsState(updated);
+    setSaveErr("");
     fetch("/api/gigs", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(updated) })
-      .then(() => { setSaved(true); setTimeout(() => setSaved(false), 2000); });
+      .then(async r => {
+        if (!r.ok) throw new Error(await r.text());
+        setSaved(true);
+        setTimeout(() => setSaved(false), 2000);
+      })
+      .catch(() => setSaveErr("Speichern fehlgeschlagen — Vercel KV noch nicht verbunden?"));
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -158,8 +169,7 @@ function GigsTab() {
 
   const del = (id: string) => {
     if (!confirm("Auftritt löschen?")) return;
-    const updated = gigs.filter(g => g.id !== id);
-    save(updated.length > 0 ? updated : DEFAULT_GIGS);
+    save(gigs.filter(g => g.id !== id));
   };
 
   const cancelEdit = () => { setEditing(null); setForm(EMPTY_GIG); };
@@ -266,6 +276,7 @@ function GigsTab() {
             </button>
             {editing && <button type="button" className="logout-btn" onClick={cancelEdit}>Abbrechen</button>}
           </div>
+          {saveErr && <p className="login-error" style={{ marginTop: ".5rem" }}>{saveErr}</p>}
         </form>
       </div>
 
