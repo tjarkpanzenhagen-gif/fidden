@@ -597,13 +597,27 @@ button { font-family: inherit; }
 
 .sc-loading {
   padding: 3rem;
-  text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: .75rem;
   font-size: .62rem;
   letter-spacing: .25em;
   color: var(--muted);
   text-transform: uppercase;
   border: 1px solid rgba(255,255,255,.06);
   background: var(--surface);
+}
+.sc-loading-dot {
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: var(--accent);
+  flex-shrink: 0;
+  animation: pulse 1.4s ease-in-out infinite;
+}
+.sc-fallback iframe {
+  border: 1px solid var(--border);
+  filter: grayscale(1) brightness(.9);
 }
 .sc-error { color: #ff4444; }
 
