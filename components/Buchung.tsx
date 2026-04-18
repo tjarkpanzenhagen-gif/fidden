@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import RevealSection from "./RevealSection";
+import MiniAvailabilityCalendar from "./MiniAvailabilityCalendar";
 
 export default function Buchung() {
   const [submitted, setSubmitted] = useState(false);
@@ -14,7 +15,7 @@ export default function Buchung() {
   return (
     <section className="section buchung-bg" id="kontakt">
       <div className="container">
-        <RevealSection from="left"><p className="s-label">— kontakt —</p></RevealSection>
+        <RevealSection from="left"><p className="s-label">— schreib uns —</p></RevealSection>
         <RevealSection from="left" delay={60}><h2 className="s-title">KONTAKT</h2></RevealSection>
 
         <RevealSection from="left" delay={80}>
@@ -24,26 +25,25 @@ export default function Buchung() {
         </RevealSection>
 
         <div className="booking-grid" style={{ marginTop: "2.5rem" }}>
+          {/* Left aside: text + mini calendar */}
           <RevealSection from="left" delay={100}>
             <div className="booking-aside">
               <p>
-                Du willst FIDDEN für dein Event buchen? Schreib uns — wir melden uns
-                innerhalb von 48&nbsp;Stunden zurück.
+                Fragen, Buchungsanfragen oder einfach nur Hallo — schreib uns direkt
+                über das Formular oder per Mail.
               </p>
               <p>
-                Club Nights, Festivals, Private Events, Hochzeiten und mehr. FIDDEN
-                bringt die Energie, egal wo.
+                Wir melden uns innerhalb von 48&nbsp;Stunden zurück.
               </p>
-              <div className="avail-box">
+
+              <div className="avail-box" style={{ marginTop: "1.5rem" }}>
                 <span className="avail-label">// Verfügbarkeit</span>
-                <p>
-                  Verfügbare Termine auf Anfrage — aktuell noch{" "}
-                  <strong>2026&nbsp;Slots frei</strong>. Jetzt sichern.
-                </p>
+                <MiniAvailabilityCalendar />
               </div>
             </div>
           </RevealSection>
 
+          {/* Right: simple contact form */}
           <RevealSection from="right" delay={160}>
             {!submitted ? (
               <form className="booking-form" onSubmit={handleSubmit}>
@@ -57,46 +57,25 @@ export default function Buchung() {
                     <input type="email" id="f-email" name="email" placeholder="mail@example.com" required />
                   </div>
                 </div>
-                <div className="f-row">
-                  <div className="f-group">
-                    <label htmlFor="f-tel">Telefon</label>
-                    <input type="tel" id="f-tel" name="tel" placeholder="+49 …" />
-                  </div>
-                  <div className="f-group">
-                    <label htmlFor="f-type">Art des Events *</label>
-                    <select id="f-type" name="type" required defaultValue="">
-                      <option value="" disabled>Bitte wählen</option>
-                      <option>Club Night</option>
-                      <option>Private Party</option>
-                      <option>Festival</option>
-                      <option>Hochzeit</option>
-                      <option>Sonstiges</option>
-                    </select>
-                  </div>
-                </div>
-                <div className="f-row">
-                  <div className="f-group">
-                    <label htmlFor="f-date">Datum des Events *</label>
-                    <input type="date" id="f-date" name="datum" required />
-                  </div>
-                  <div className="f-group">
-                    <label htmlFor="f-ort">Ort / Venue *</label>
-                    <input type="text" id="f-ort" name="ort" placeholder="Club Name, Stadt" required />
-                  </div>
+                <div className="f-group">
+                  <label htmlFor="f-tel">Telefon</label>
+                  <input type="tel" id="f-tel" name="tel" placeholder="+49 …" />
                 </div>
                 <div className="f-group">
-                  <label htmlFor="f-msg">Nachricht / Details</label>
+                  <label htmlFor="f-msg">Nachricht *</label>
                   <textarea
                     id="f-msg"
                     name="msg"
-                    placeholder="Erzähl uns mehr — Erwartungen, Gästezahl, Budget…"
+                    placeholder="Was hast du auf dem Herzen? Event-Details, Fragen, Anfragen…"
+                    style={{ minHeight: "140px" }}
+                    required
                   />
                 </div>
-                <button type="submit" className="submit-btn">[ Anfrage senden ]</button>
+                <button type="submit" className="submit-btn">[ Nachricht senden ]</button>
               </form>
             ) : (
               <div className="success-msg show">
-                <strong>ANFRAGE EINGEGANGEN</strong>
+                <strong>NACHRICHT EINGEGANGEN</strong>
                 <p>Danke — wir melden uns innerhalb von 48&nbsp;Stunden. Keep it dark.</p>
               </div>
             )}

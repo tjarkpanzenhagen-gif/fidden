@@ -766,6 +766,96 @@ button { font-family: inherit; }
 .ig-svg { width: 15px; height: 15px; opacity: .65; transition: opacity .2s; }
 .footer-links a:hover .ig-svg { opacity: 1; }
 
+/* ─── MINI AVAILABILITY CALENDAR (Kontakt aside) ─── */
+.mini-cal { margin-top: .75rem; }
+.mini-cal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: .6rem;
+}
+.mini-cal-title {
+  font-family: var(--font-bebas), 'Bebas Neue', sans-serif;
+  font-size: .9rem;
+  letter-spacing: .1em;
+  color: var(--text);
+}
+.mini-cal-nav {
+  background: none;
+  border: none;
+  color: var(--muted);
+  font-size: .65rem;
+  cursor: pointer;
+  padding: .2rem .4rem;
+  transition: color .2s;
+}
+.mini-cal-nav:hover { color: var(--accent); }
+.mini-cal-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 2px;
+}
+.mini-cal-label {
+  font-size: .45rem;
+  letter-spacing: .12em;
+  color: var(--muted);
+  text-align: center;
+  padding: .2rem 0;
+  text-transform: uppercase;
+}
+.mini-cal-day {
+  aspect-ratio: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: .5rem;
+  letter-spacing: .05em;
+  color: var(--muted);
+  border-radius: 2px;
+  transition: background .15s;
+}
+.mini-cal-day.empty { background: transparent; }
+.mini-cal-day.past  { opacity: .25; }
+.mini-cal-day.today { outline: 1px solid var(--border); }
+.mini-cal-day.bookable {
+  background: var(--accent);
+  color: var(--bg);
+  font-weight: 700;
+}
+.mini-cal-legend {
+  display: flex;
+  gap: .9rem;
+  margin-top: .75rem;
+  flex-wrap: wrap;
+}
+.mini-legend-item {
+  display: flex;
+  align-items: center;
+  gap: .35rem;
+  font-size: .48rem;
+  letter-spacing: .12em;
+  color: var(--muted);
+  text-transform: uppercase;
+}
+.mini-legend-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 1px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  display: inline-block;
+  flex-shrink: 0;
+}
+.mini-legend-dot.bookable { background: var(--accent); border-color: var(--accent); }
+.mini-legend-dot.past     { background: transparent; border-color: var(--border); opacity: .35; }
+.mini-cal-hint {
+  margin-top: .6rem;
+  font-size: .5rem;
+  letter-spacing: .14em;
+  color: var(--muted);
+  text-transform: uppercase;
+}
+
 /* ─── VERFÜGBARKEIT SECTION (inline on homepage) ─── */
 .verfueg-section { background: #0d0d0d; }
 .cal-header-title {
