@@ -3,10 +3,10 @@ import RevealSection from "./RevealSection";
 
 const photos = [
   { seed: "1047", w: 600, h: 900, tall: true,  label: "28 Jun 2026",  venue: "Helios Club · Rostock" },
-  { seed: "1031", w: 600, h: 420, tall: false, label: "Backstage",     venue: "Pre-Show Ritual" },
-  { seed: "1052", w: 600, h: 420, tall: false, label: "Live",          venue: "Open Air Session" },
-  { seed: "1049", w: 600, h: 420, tall: false, label: "Studio",        venue: "Production Session" },
-  { seed: "1033", w: 600, h: 900, tall: true,  label: "Portrait",      venue: "SIR FIDDEN 2026" },
+  { seed: "1031", w: 600, h: 420, tall: false, label: "Hinter der Bühne", venue: "Vorbereitung" },
+  { seed: "1052", w: 600, h: 420, tall: false, label: "Live",          venue: "Open Air" },
+  { seed: "1049", w: 600, h: 420, tall: false, label: "Studio",        venue: "Produktion" },
+  { seed: "1033", w: 600, h: 900, tall: true,  label: "Porträt",       venue: "SIR FIDDEN 2026" },
   { seed: "1041", w: 600, h: 420, tall: false, label: "12 Jul 2026",   venue: "Klex · Greifswald" },
 ];
 
@@ -16,7 +16,7 @@ export default function Gallery() {
   return (
     <section className="section gallery-bg" id="gallery">
       <div className="container">
-        <RevealSection from="left"><p className="s-label">— visuals —</p></RevealSection>
+        <RevealSection from="left"><p className="s-label">— fotos —</p></RevealSection>
         <RevealSection from="left" delay={60}><h2 className="s-title">SHOTS</h2></RevealSection>
 
         <div className="gallery-grid">
@@ -46,7 +46,7 @@ export default function Gallery() {
         <RevealSection from="right" delay={200}>
           <div className="gallery-ig">
             <a href="https://www.instagram.com/dj.fidden" target="_blank" rel="noopener noreferrer">
-              ↗ @dj.fidden on Instagram
+              ↗ @dj.fidden auf Instagram
             </a>
           </div>
         </RevealSection>

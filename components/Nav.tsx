@@ -29,7 +29,7 @@ export default function Nav() {
     <>
       <div className={`mobile-overlay${open ? " open" : ""}`}>
         <Link href="#auftritte"      onClick={close}>Auftritte</Link>
-        <Link href="#gallery"        onClick={close}>Gallery</Link>
+        <Link href="#gallery"        onClick={close}>Galerie</Link>
         <Link href="#verfuegbarkeit" onClick={close}>Verfügbar</Link>
         <Link href="#kontakt"        onClick={close}>Kontakt</Link>
         <a href={SC_URL} target="_blank" rel="noopener noreferrer" onClick={close}>SoundCloud</a>
@@ -41,7 +41,7 @@ export default function Nav() {
         </Link>
         <ul className="nav-links">
           <li><Link href="#auftritte">Auftritte</Link></li>
-          <li><Link href="#gallery">Gallery</Link></li>
+          <li><Link href="#gallery">Galerie</Link></li>
           <li><Link href="#verfuegbarkeit">Verfügbar</Link></li>
           <li><Link href="#kontakt">Kontakt</Link></li>
           <li>

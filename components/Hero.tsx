@@ -12,11 +12,11 @@ export default function Hero() {
           <span className="blink" />
         </p>
         <div className="hero-cta">
-          <Link href="#kontakt" className="btn">[ Book Now ]</Link>
+          <Link href="#kontakt" className="btn">[ Jetzt buchen ]</Link>
         </div>
       </div>
       <div className="scroll-hint">
-        <span>scroll</span>
+        <span>Scrollen</span>
         <div className="scroll-line" />
       </div>
     </section>

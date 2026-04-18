@@ -191,7 +191,7 @@ export default function Sounds() {
                   <div className="sc-np-artwork" style={{ background: "#1a1a1a" }} />
                 )}
                 <div className="sc-np-info">
-                  <div className="sc-np-label">Now Playing</div>
+                  <div className="sc-np-label">Läuft gerade</div>
                   <div className="sc-np-title">{nowPlaying?.title}</div>
                 </div>
                 <div className="sc-np-controls">
