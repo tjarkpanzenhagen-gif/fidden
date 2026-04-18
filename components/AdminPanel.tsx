@@ -163,14 +163,22 @@ function GigsTab() {
     try {
       const fd = new FormData();
       fd.append("file", file);
-      const res  = await fetch("/api/upload", { method: "POST", body: fd });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error ?? "Upload fehlgeschlagen.");
+      const res = await fetch("/api/upload", { method: "POST", body: fd });
+
+      let data: { url?: string; error?: string } = {};
+      const text = await res.text();
+      if (text) {
+        try { data = JSON.parse(text); } catch { /* non-JSON body */ }
+      }
+
+      if (!res.ok) throw new Error(data.error ?? `Server-Fehler ${res.status}.`);
+      if (!data.url) throw new Error("Keine URL zurückgegeben.");
       set("imageUrl", data.url);
     } catch (err) {
       setUploadErr(err instanceof Error ? err.message : "Upload fehlgeschlagen.");
     } finally {
       setUploading(false);
+      e.target.value = "";
     }
   };
 

@@ -38,10 +38,12 @@ export function getGigs(): Gig[] {
   if (typeof window === "undefined") return DEFAULT_GIGS;
   try {
     const raw = localStorage.getItem(GIGS_KEY);
-    if (!raw) return DEFAULT_GIGS;
-    const gigs = JSON.parse(raw) as Gig[];
-    return gigs.length > 0 ? gigs : DEFAULT_GIGS;
+    if (!raw || raw.trim() === "") return DEFAULT_GIGS;
+    const parsed = JSON.parse(raw);
+    if (!Array.isArray(parsed) || parsed.length === 0) return DEFAULT_GIGS;
+    return parsed as Gig[];
   } catch {
+    localStorage.removeItem(GIGS_KEY); // clear corrupted data
     return DEFAULT_GIGS;
   }
 }

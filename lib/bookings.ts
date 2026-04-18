@@ -4,8 +4,11 @@ export function getBookableDates(): string[] {
   if (typeof window === "undefined") return [];
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
-    return raw ? (JSON.parse(raw) as string[]) : [];
+    if (!raw || raw.trim() === "") return [];
+    const parsed = JSON.parse(raw);
+    return Array.isArray(parsed) ? parsed as string[] : [];
   } catch {
+    localStorage.removeItem(STORAGE_KEY); // clear corrupted data
     return [];
   }
 }
