@@ -10,8 +10,8 @@ export default function Home() {
     <main>
       <Hero />
       <Auftritte />
-      <Gallery />
       <VerfuegbarkeitSection />
+      <Gallery />
       <Buchung />
       <Footer />
     </main>
