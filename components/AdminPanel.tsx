@@ -118,6 +118,8 @@ function GigsTab() {
   const [form, setForm]       = useState<Omit<Gig, "id">>(EMPTY_GIG);
   const [editing, setEditing] = useState<string | null>(null);
   const [saved, setSaved]     = useState(false);
+  const [uploading, setUploading] = useState(false);
+  const [uploadErr, setUploadErr] = useState("");
 
   useEffect(() => { setGigsState(getGigs()); }, []);
 
@@ -151,8 +153,26 @@ function GigsTab() {
   };
 
   const cancelEdit = () => { setEditing(null); setForm(EMPTY_GIG); };
-
   const set = (k: keyof typeof form, v: string) => setForm(p => ({ ...p, [k]: v }));
+
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setUploading(true);
+    setUploadErr("");
+    try {
+      const fd = new FormData();
+      fd.append("file", file);
+      const res  = await fetch("/api/upload", { method: "POST", body: fd });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error ?? "Upload fehlgeschlagen.");
+      set("imageUrl", data.url);
+    } catch (err) {
+      setUploadErr(err instanceof Error ? err.message : "Upload fehlgeschlagen.");
+    } finally {
+      setUploading(false);
+    }
+  };
 
   return (
     <div className="gig-manager">
@@ -178,16 +198,48 @@ function GigsTab() {
             <label>Beschreibung</label>
             <textarea value={form.description} onChange={e => set("description", e.target.value)} placeholder="Kurze Beschreibung des Auftritts…" style={{ minHeight: "80px" }} />
           </div>
+
+          {/* Image upload */}
           <div className="f-group">
-            <label>Bild URL</label>
-            <input type="url" value={form.imageUrl} onChange={e => set("imageUrl", e.target.value)} placeholder="https://… (imgbb, imgur, etc.)" />
+            <label>Bild</label>
+            <label className="img-upload-zone" style={{ cursor: uploading ? "wait" : "none" }}>
+              <input
+                type="file"
+                accept="image/jpeg,image/png,image/webp,image/gif"
+                onChange={handleImageUpload}
+                style={{ display: "none" }}
+                disabled={uploading}
+              />
+              {form.imageUrl ? (
+                <div className="img-upload-preview">
+                  <Image src={form.imageUrl} alt="Vorschau" width={200} height={100} style={{ objectFit: "cover", width: "100%", height: "100px" }} unoptimized />
+                  <span className="img-upload-replace">{uploading ? "Lädt hoch…" : "Bild ersetzen — klicken"}</span>
+                </div>
+              ) : (
+                <div className="img-upload-placeholder">
+                  {uploading ? (
+                    <span>Lädt hoch…</span>
+                  ) : (
+                    <>
+                      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+                        <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M17 8l-5-5-5 5M12 3v12"/>
+                      </svg>
+                      <span>Bild hier ablegen oder klicken</span>
+                      <small>JPG, PNG, WebP — max. 8 MB</small>
+                    </>
+                  )}
+                </div>
+              )}
+            </label>
+            {uploadErr && <p className="login-error" style={{ marginTop: ".4rem" }}>{uploadErr}</p>}
           </div>
+
           <div className="f-group">
             <label>Ticket URL</label>
             <input type="url" value={form.ticketUrl} onChange={e => set("ticketUrl", e.target.value)} placeholder="https://…" />
           </div>
           <div className="admin-actions" style={{ marginTop: 0 }}>
-            <button type="submit" className="submit-btn">
+            <button type="submit" className="submit-btn" disabled={uploading}>
               {saved ? "[ ✓ Gespeichert ]" : editing ? "[ Aktualisieren ]" : "[ Hinzufügen ]"}
             </button>
             {editing && <button type="button" className="logout-btn" onClick={cancelEdit}>Abbrechen</button>}
