@@ -126,6 +126,14 @@ button { font-family: inherit; }
 }
 .nav-links a:hover { color: var(--accent); }
 .nav-links a:hover::after { width: 100%; }
+.nav-sc-link {
+  display: flex;
+  align-items: center;
+  opacity: .7;
+  transition: opacity .2s;
+}
+.nav-sc-link::after { display: none !important; }
+.nav-sc-link:hover { opacity: 1; }
 
 .hamburger {
   display: none;
@@ -264,8 +272,8 @@ button { font-family: inherit; }
   animation: fadeUp .8s ease 1.5s forwards;
 }
 .scroll-hint span {
-  font-size: .5rem;
-  letter-spacing: .35em;
+  font-size: .62rem;
+  letter-spacing: .3em;
   color: var(--muted);
   text-transform: uppercase;
 }
