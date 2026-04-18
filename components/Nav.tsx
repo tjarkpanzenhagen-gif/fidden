@@ -21,7 +21,7 @@ export default function Nav() {
         <Link href="#auftritte" onClick={close}>Auftritte</Link>
         <Link href="#gallery"   onClick={close}>Gallery</Link>
         <Link href="#sounds"    onClick={close}>Sounds</Link>
-        <Link href="/verfuegbarkeit" onClick={close}>Verfügbar</Link>
+        <Link href="#verfuegbarkeit" onClick={close}>Verfügbar</Link>
         <Link href="#buchung"   onClick={close}>Booking</Link>
       </div>
 
@@ -33,7 +33,7 @@ export default function Nav() {
           <li><Link href="#auftritte">Auftritte</Link></li>
           <li><Link href="#gallery">Gallery</Link></li>
           <li><Link href="#sounds">Sounds</Link></li>
-          <li><Link href="/verfuegbarkeit">Verfügbar</Link></li>
+          <li><Link href="#verfuegbarkeit">Verfügbar</Link></li>
           <li><Link href="#buchung">Booking</Link></li>
         </ul>
         <button
