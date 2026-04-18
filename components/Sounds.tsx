@@ -103,10 +103,10 @@ export default function Sounds() {
       />
 
       <div className="container">
-        <RevealSection><p className="s-label">— listen —</p></RevealSection>
-        <RevealSection delay={60}><h2 className="s-title">SOUNDS</h2></RevealSection>
+        <RevealSection from="left"><p className="s-label">— listen —</p></RevealSection>
+        <RevealSection from="left" delay={60}><h2 className="s-title">SOUNDS</h2></RevealSection>
 
-        <RevealSection delay={120}>
+        <RevealSection from="right" delay={120}>
           {/* Now-playing bar */}
           <div className={`sc-now-playing${nowPlaying ? "" : " hidden"}`}>
             {nowPlaying?.artwork_url ? (

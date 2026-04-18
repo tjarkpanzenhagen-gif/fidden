@@ -14,11 +14,11 @@ export default function Buchung() {
   return (
     <section className="section buchung-bg" id="buchung">
       <div className="container">
-        <RevealSection><p className="s-label">— kontakt —</p></RevealSection>
-        <RevealSection delay={60}><h2 className="s-title">BUCHUNG</h2></RevealSection>
+        <RevealSection from="left"><p className="s-label">— kontakt —</p></RevealSection>
+        <RevealSection from="left" delay={60}><h2 className="s-title">BUCHUNG</h2></RevealSection>
 
         <div className="booking-grid">
-          <RevealSection delay={100}>
+          <RevealSection from="left" delay={100}>
             <div className="booking-aside">
               <p>
                 Du willst FIDDEN für dein Event buchen? Schreib uns — wir melden uns
@@ -38,7 +38,7 @@ export default function Buchung() {
             </div>
           </RevealSection>
 
-          <RevealSection delay={160}>
+          <RevealSection from="right" delay={160}>
             {!submitted ? (
               <form className="booking-form" onSubmit={handleSubmit}>
                 <div className="f-row">
