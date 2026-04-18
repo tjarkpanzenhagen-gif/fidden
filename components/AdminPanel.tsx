@@ -155,31 +155,35 @@ function GigsTab() {
   const cancelEdit = () => { setEditing(null); setForm(EMPTY_GIG); };
   const set = (k: keyof typeof form, v: string) => setForm(p => ({ ...p, [k]: v }));
 
-  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
+
+    const allowed = ["image/jpeg", "image/png", "image/webp", "image/gif"];
+    if (!allowed.includes(file.type)) {
+      setUploadErr("Nur JPG, PNG, WebP oder GIF erlaubt.");
+      return;
+    }
+    if (file.size > 4 * 1024 * 1024) {
+      setUploadErr("Datei zu groß (max. 4 MB).");
+      return;
+    }
+
     setUploading(true);
     setUploadErr("");
-    try {
-      const fd = new FormData();
-      fd.append("file", file);
-      const res = await fetch("/api/upload", { method: "POST", body: fd });
 
-      let data: { url?: string; error?: string } = {};
-      const text = await res.text();
-      if (text) {
-        try { data = JSON.parse(text); } catch { /* non-JSON body */ }
-      }
-
-      if (!res.ok) throw new Error(data.error ?? `Server-Fehler ${res.status}.`);
-      if (!data.url) throw new Error("Keine URL zurückgegeben.");
-      set("imageUrl", data.url);
-    } catch (err) {
-      setUploadErr(err instanceof Error ? err.message : "Upload fehlgeschlagen.");
-    } finally {
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      const dataUrl = ev.target?.result as string;
+      set("imageUrl", dataUrl);
       setUploading(false);
-      e.target.value = "";
-    }
+    };
+    reader.onerror = () => {
+      setUploadErr("Bild konnte nicht gelesen werden.");
+      setUploading(false);
+    };
+    reader.readAsDataURL(file);
+    e.target.value = "";
   };
 
   return (
