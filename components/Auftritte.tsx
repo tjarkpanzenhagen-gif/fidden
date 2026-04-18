@@ -2,9 +2,9 @@ import Link from "next/link";
 import RevealSection from "./RevealSection";
 
 const gigs = [
-  { date: "28. Jun", year: "2025", venue: "Helios Club", city: "Rostock, MV" },
-  { date: "12. Jul", year: "2025", venue: "Klex",        city: "Greifswald, MV" },
-  { date: "02. Aug", year: "2025", venue: "Stralsund Open Air", city: "Stralsund, MV" },
+  { date: "28. Jun", year: "2026", venue: "Helios Club", city: "Rostock, MV" },
+  { date: "12. Jul", year: "2026", venue: "Klex",        city: "Greifswald, MV" },
+  { date: "02. Aug", year: "2026", venue: "Stralsund Open Air", city: "Stralsund, MV" },
 ];
 
 export default function Auftritte() {

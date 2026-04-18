@@ -2,7 +2,7 @@ export default function Footer() {
   return (
     <footer className="footer">
       <div className="footer-copy">
-        &copy; 2025 DJ <em>FIDDEN</em>
+        &copy; 2026 DJ <em>FIDDEN</em>
         <br />
         <span className="footer-made">Made with ❤️ in MV</span>
       </div>
