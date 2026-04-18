@@ -14,7 +14,8 @@
       "Bash(robocopy \"c:\\\\Users\\\\Drest\\\\Desktop\\\\fidden-temp\" \"c:\\\\Users\\\\Drest\\\\Desktop\\\\Clients\\\\Fidden\" /E /XD \".git\" /NFL /NDL /NJH /NJS)",
       "Bash(powershell -Command \"Copy-Item 'C:\\\\Users\\\\Drest\\\\Desktop\\\\fidden-temp\\\\*' -Destination 'C:\\\\Users\\\\Drest\\\\Desktop\\\\Clients\\\\Fidden\\\\' -Recurse -Force -Exclude '.git'\")",
       "Bash(npx tsc *)",
-      "Bash(npm install *)"
+      "Bash(npm install *)",
+      "Bash(npm uninstall *)"
     ]
   }
 }
