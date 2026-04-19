@@ -26,12 +26,10 @@ function GigCard({ gig, index }: { gig: Gig; index: number }) {
         {gig.description && (
           <div className="gig-card-desc">&ldquo;{gig.description}&rdquo;</div>
         )}
-        {gig.ticketUrl ? (
+        {gig.ticketUrl && (
           <a href={gig.ticketUrl} target="_blank" rel="noopener noreferrer" className="gig-link">
             Tickets →
           </a>
-        ) : (
-          <Link href="#kontakt" className="gig-link">Anfragen →</Link>
         )}
       </div>
     </RevealSection>
