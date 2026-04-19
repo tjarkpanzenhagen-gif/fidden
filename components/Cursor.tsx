@@ -7,6 +7,9 @@ export default function Cursor() {
   const ringRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
+    // Skip on touch/pointer-coarse devices (mobile, tablet)
+    if (window.matchMedia("(pointer: coarse)").matches) return;
+
     let mx = 0, my = 0, rx = 0, ry = 0;
     let raf: number;
 
@@ -33,7 +36,7 @@ export default function Cursor() {
     raf = requestAnimationFrame(animate);
 
     const hoverEls = document.querySelectorAll<HTMLElement>(
-      "a, button, .gig, .g-item, input, select, textarea, .waveform, .progress-bar"
+      "a, button, .gig, .g-item, input, select, textarea"
     );
     const add    = () => { curRef.current?.classList.add("hovered"); ringRef.current?.classList.add("hovered"); };
     const remove = () => { curRef.current?.classList.remove("hovered"); ringRef.current?.classList.remove("hovered"); };
