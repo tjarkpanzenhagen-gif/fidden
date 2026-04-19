@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
 import { toISO, today } from "@/lib/bookings";
 
 const DAY_LABELS = ["Mo", "Di", "Mi", "Do", "Fr", "Sa", "So"];
@@ -11,7 +10,6 @@ const MONTH_NAMES = [
 ];
 
 export default function AvailabilityCalendar() {
-  const router = useRouter();
   const [bookable, setBookable] = useState<string[]>([]);
   const [selected, setSelected] = useState<string | null>(null);
 
@@ -57,8 +55,7 @@ export default function AvailabilityCalendar() {
   };
 
   const bookNow = () => {
-    if (!selected) return;
-    router.push(`/#buchung?date=${selected}`);
+    document.getElementById("kontakt")?.scrollIntoView({ behavior: "smooth" });
   };
 
   return (
