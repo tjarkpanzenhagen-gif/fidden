@@ -1,15 +1,43 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef } from "react";
 import RevealSection from "./RevealSection";
 import MiniAvailabilityCalendar from "./MiniAvailabilityCalendar";
 
 export default function Buchung() {
   const [submitted, setSubmitted] = useState(false);
+  const [loading,   setLoading]   = useState(false);
+  const [error,     setError]     = useState("");
+  const formRef = useRef<HTMLFormElement>(null);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setSubmitted(true);
+    setLoading(true);
+    setError("");
+
+    const form = e.currentTarget as HTMLFormElement;
+    const data = Object.fromEntries(new FormData(form));
+
+    try {
+      const res = await fetch("/api/contact", {
+        method:  "POST",
+        headers: { "Content-Type": "application/json" },
+        body:    JSON.stringify(data),
+      });
+      if (!res.ok) {
+        const body = await res.json().catch(() => ({}));
+        throw new Error(body.error ?? "Unbekannter Fehler");
+      }
+      setSubmitted(true);
+    } catch (err) {
+      setError(
+        err instanceof Error && err.message !== "Unbekannter Fehler"
+          ? err.message
+          : "Nachricht konnte nicht gesendet werden. Bitte schreib direkt an booking@djfidden.de."
+      );
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -43,23 +71,48 @@ export default function Buchung() {
             </div>
           </RevealSection>
 
-          {/* Right: simple contact form */}
+          {/* Right: contact form */}
           <RevealSection from="right" delay={160}>
-            {!submitted ? (
-              <form className="booking-form" onSubmit={handleSubmit}>
+            {submitted ? (
+              <div className="success-msg show">
+                <strong>NACHRICHT EINGEGANGEN</strong>
+                <p>Danke — wir melden uns innerhalb von 48&nbsp;Stunden. Keep it dark.</p>
+              </div>
+            ) : (
+              <form ref={formRef} className="booking-form" onSubmit={handleSubmit}>
                 <div className="f-row">
                   <div className="f-group">
                     <label htmlFor="f-name">Name *</label>
-                    <input type="text" id="f-name" name="name" placeholder="Max Mustermann" required />
+                    <input
+                      type="text"
+                      id="f-name"
+                      name="name"
+                      placeholder="Max Mustermann"
+                      required
+                      disabled={loading}
+                    />
                   </div>
                   <div className="f-group">
                     <label htmlFor="f-email">E-Mail *</label>
-                    <input type="email" id="f-email" name="email" placeholder="mail@example.com" required />
+                    <input
+                      type="email"
+                      id="f-email"
+                      name="email"
+                      placeholder="mail@example.com"
+                      required
+                      disabled={loading}
+                    />
                   </div>
                 </div>
                 <div className="f-group">
                   <label htmlFor="f-tel">Telefon</label>
-                  <input type="tel" id="f-tel" name="tel" placeholder="+49 …" />
+                  <input
+                    type="tel"
+                    id="f-tel"
+                    name="tel"
+                    placeholder="+49 …"
+                    disabled={loading}
+                  />
                 </div>
                 <div className="f-group">
                   <label htmlFor="f-msg">Nachricht *</label>
@@ -69,15 +122,21 @@ export default function Buchung() {
                     placeholder="Was hast du auf dem Herzen? Event-Details, Fragen, Anfragen…"
                     style={{ minHeight: "140px" }}
                     required
+                    disabled={loading}
                   />
                 </div>
-                <button type="submit" className="submit-btn">[ Nachricht senden ]</button>
+                {error && (
+                  <p className="login-error" style={{ marginTop: 0 }}>{error}</p>
+                )}
+                <button
+                  type="submit"
+                  className="submit-btn"
+                  disabled={loading}
+                  style={{ opacity: loading ? 0.6 : 1 }}
+                >
+                  {loading ? "[ Wird gesendet… ]" : "[ Nachricht senden ]"}
+                </button>
               </form>
-            ) : (
-              <div className="success-msg show">
-                <strong>NACHRICHT EINGEGANGEN</strong>
-                <p>Danke — wir melden uns innerhalb von 48&nbsp;Stunden. Keep it dark.</p>
-              </div>
             )}
           </RevealSection>
         </div>

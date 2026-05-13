@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { DEFAULT_GIGS } from "@/lib/gigs";
+import { verifyToken, getAuthToken } from "@/lib/adminAuth";
 
 async function getRedis() {
   const url   = process.env.UPSTASH_REDIS_REST_URL   || process.env.KV_REST_API_URL;
@@ -21,6 +22,9 @@ export async function GET() {
 }
 
 export async function POST(req: Request) {
+  if (!(await verifyToken(getAuthToken(req)))) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
   try {
     const redis = await getRedis();
     if (!redis) return NextResponse.json({ ok: false, error: "Redis nicht konfiguriert" }, { status: 503 });

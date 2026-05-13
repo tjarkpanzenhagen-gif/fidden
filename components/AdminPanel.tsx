@@ -4,8 +4,8 @@ import { useState, useEffect } from "react";
 import Image from "next/image";
 import { toISO, today } from "@/lib/bookings";
 import { formatGigDate, DEFAULT_GIGS, type Gig } from "@/lib/gigs";
+import type { ContactEntry } from "@/app/api/contact/route";
 
-const CREDENTIALS = { user: "Fiete_Rasser", pass: "12345" };
 const DAY_LABELS   = ["Mo", "Di", "Mi", "Do", "Fr", "Sa", "So"];
 const MONTH_NAMES  = ["Januar","Februar","März","April","Mai","Juni","Juli","August","September","Oktober","November","Dezember"];
 
@@ -13,18 +13,39 @@ const EMPTY_GIG: Omit<Gig, "id"> = {
   date: "", venue: "", city: "", description: "", imageUrl: "", ticketUrl: "",
 };
 
+function authHeader(token: string) {
+  return { "Content-Type": "application/json", "Authorization": `Bearer ${token}` };
+}
+
 /* ── Login ── */
-function Login({ onLogin }: { onLogin: () => void }) {
+function Login({ onLogin }: { onLogin: (token: string) => void }) {
   const [u, setU] = useState("");
   const [p, setP] = useState("");
-  const [err, setErr] = useState("");
+  const [err, setErr]       = useState("");
+  const [loading, setLoad]  = useState(false);
 
-  const submit = (e: React.FormEvent) => {
+  const submit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (u === CREDENTIALS.user && p === CREDENTIALS.pass) {
-      sessionStorage.setItem("fidden_admin", "1");
-      onLogin();
-    } else { setErr("Ungültige Zugangsdaten."); }
+    setLoad(true);
+    setErr("");
+    try {
+      const res = await fetch("/api/admin/login", {
+        method:  "POST",
+        headers: { "Content-Type": "application/json" },
+        body:    JSON.stringify({ user: u, pass: p }),
+      });
+      const data = await res.json();
+      if (!res.ok || !data.token) {
+        setErr("Ungültige Zugangsdaten.");
+        return;
+      }
+      sessionStorage.setItem("fidden_admin_token", data.token);
+      onLogin(data.token);
+    } catch {
+      setErr("Verbindungsfehler — bitte erneut versuchen.");
+    } finally {
+      setLoad(false);
+    }
   };
 
   return (
@@ -34,21 +55,23 @@ function Login({ onLogin }: { onLogin: () => void }) {
       <form onSubmit={submit} className="booking-form" style={{ gap: ".9rem" }}>
         <div className="f-group">
           <label htmlFor="au">Benutzername</label>
-          <input id="au" type="text" value={u} onChange={e => { setU(e.target.value); setErr(""); }} placeholder="Benutzername" required />
+          <input id="au" type="text" value={u} onChange={e => { setU(e.target.value); setErr(""); }} placeholder="Benutzername" required disabled={loading} />
         </div>
         <div className="f-group">
           <label htmlFor="ap">Passwort</label>
-          <input id="ap" type="password" value={p} onChange={e => { setP(e.target.value); setErr(""); }} placeholder="••••••" required />
+          <input id="ap" type="password" value={p} onChange={e => { setP(e.target.value); setErr(""); }} placeholder="••••••" required disabled={loading} />
         </div>
         {err && <p className="login-error">{err}</p>}
-        <button type="submit" className="submit-btn">[ Einloggen ]</button>
+        <button type="submit" className="submit-btn" disabled={loading}>
+          {loading ? "[ Einloggen… ]" : "[ Einloggen ]"}
+        </button>
       </form>
     </div>
   );
 }
 
 /* ── Calendar Tab ── */
-function CalendarTab() {
+function CalendarTab({ token }: { token: string }) {
   const [bookable, setBookable] = useState<string[]>([]);
   const [saved, setSaved]       = useState(false);
   const [saveErr, setSaveErr]   = useState("");
@@ -61,25 +84,31 @@ function CalendarTab() {
   }, []);
 
   const toggle = (iso: string) => { setSaved(false); setSaveErr(""); setBookable(p => p.includes(iso) ? p.filter(d => d !== iso) : [...p, iso]); };
-  const save   = () => {
+
+  const save = () => {
     setSaveErr("");
-    fetch("/api/bookings", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(bookable) })
-      .then(async r => { if (!r.ok) throw new Error(); setSaved(true); setTimeout(() => setSaved(false), 2500); })
-      .catch(() => setSaveErr("Speichern fehlgeschlagen — Vercel KV noch nicht verbunden?"));
+    fetch("/api/bookings", { method: "POST", headers: authHeader(token), body: JSON.stringify(bookable) })
+      .then(async r => {
+        if (!r.ok) throw new Error(r.status === 401 ? "Nicht autorisiert — bitte neu einloggen." : "");
+        setSaved(true);
+        setTimeout(() => setSaved(false), 2500);
+      })
+      .catch(err => setSaveErr(err instanceof Error && err.message ? err.message : "Speichern fehlgeschlagen — Vercel KV noch nicht verbunden?"));
   };
-  const clear  = () => {
+
+  const clear = () => {
     if (!confirm("Alle buchbaren Tage löschen?")) return;
     setBookable([]);
-    fetch("/api/bookings", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify([]) });
+    fetch("/api/bookings", { method: "POST", headers: authHeader(token), body: JSON.stringify([]) });
   };
 
   const prev = () => month === 0 ? (setMonth(11), setYear(y => y - 1)) : setMonth(m => m - 1);
-  const next = () => month === 11 ? (setMonth(0),  setYear(y => y + 1)) : setMonth(m => m + 1);
+  const next = () => month === 11 ? (setMonth(0), setYear(y => y + 1)) : setMonth(m => m + 1);
 
-  const firstDay = new Date(year, month, 1);
-  const lastDay  = new Date(year, month + 1, 0);
-  const offset   = (firstDay.getDay() + 6) % 7;
-  const todayISO = today();
+  const firstDay  = new Date(year, month, 1);
+  const lastDay   = new Date(year, month + 1, 0);
+  const offset    = (firstDay.getDay() + 6) % 7;
+  const todayISO  = today();
 
   const days: Array<{ iso: string; day: number } | null> = [];
   for (let i = 0; i < offset; i++) days.push(null);
@@ -126,38 +155,38 @@ function CalendarTab() {
 }
 
 /* ── Gigs Tab ── */
-function GigsTab() {
-  const [gigs, setGigsState] = useState<Gig[]>([]);
-  const [form, setForm]       = useState<Omit<Gig, "id">>(EMPTY_GIG);
-  const [editing, setEditing] = useState<string | null>(null);
+function GigsTab({ token }: { token: string }) {
+  const [gigs, setGigsState]      = useState<Gig[]>([]);
+  const [form, setForm]           = useState<Omit<Gig, "id">>(EMPTY_GIG);
+  const [editing, setEditing]     = useState<string | null>(null);
   const [saved, setSaved]         = useState(false);
   const [saveErr, setSaveErr]     = useState("");
   const [uploading, setUploading] = useState(false);
   const [uploadErr, setUploadErr] = useState("");
 
   useEffect(() => {
-    fetch("/api/gigs").then(r => r.json()).then(setGigsState).catch(() => {});
+    fetch("/api/gigs").then(r => r.json()).then(setGigsState).catch(() => setGigsState(DEFAULT_GIGS));
   }, []);
 
-  const save = (updated: Gig[]) => {
+  const saveGigs = (updated: Gig[]) => {
     setGigsState(updated);
     setSaveErr("");
-    fetch("/api/gigs", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(updated) })
+    fetch("/api/gigs", { method: "POST", headers: authHeader(token), body: JSON.stringify(updated) })
       .then(async r => {
-        if (!r.ok) throw new Error(await r.text());
+        if (!r.ok) throw new Error(r.status === 401 ? "Nicht autorisiert — bitte neu einloggen." : await r.text());
         setSaved(true);
         setTimeout(() => setSaved(false), 2000);
       })
-      .catch(() => setSaveErr("Speichern fehlgeschlagen — Vercel KV noch nicht verbunden?"));
+      .catch(err => setSaveErr(err instanceof Error && err.message ? err.message : "Speichern fehlgeschlagen — Vercel KV noch nicht verbunden?"));
   };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (editing) {
-      save(gigs.map(g => g.id === editing ? { ...form, id: editing } : g));
+      saveGigs(gigs.map(g => g.id === editing ? { ...form, id: editing } : g));
       setEditing(null);
     } else {
-      save([...gigs, { ...form, id: crypto.randomUUID() }]);
+      saveGigs([...gigs, { ...form, id: crypto.randomUUID() }]);
     }
     setForm(EMPTY_GIG);
   };
@@ -169,11 +198,13 @@ function GigsTab() {
 
   const del = (id: string) => {
     if (!confirm("Auftritt löschen?")) return;
-    save(gigs.filter(g => g.id !== id));
+    saveGigs(gigs.filter(g => g.id !== id));
   };
 
   const cancelEdit = () => { setEditing(null); setForm(EMPTY_GIG); };
   const set = (k: keyof typeof form, v: string) => setForm(p => ({ ...p, [k]: v }));
+
+  const MAX_IMG_BYTES = 2 * 1024 * 1024; // 2 MB — stays comfortably within Redis string limits as base64
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -184,8 +215,8 @@ function GigsTab() {
       setUploadErr("Nur JPG, PNG, WebP oder GIF erlaubt.");
       return;
     }
-    if (file.size > 4 * 1024 * 1024) {
-      setUploadErr("Datei zu groß (max. 4 MB).");
+    if (file.size > MAX_IMG_BYTES) {
+      setUploadErr("Datei zu groß (max. 2 MB).");
       return;
     }
 
@@ -193,9 +224,8 @@ function GigsTab() {
     setUploadErr("");
 
     const reader = new FileReader();
-    reader.onload = (ev) => {
-      const dataUrl = ev.target?.result as string;
-      set("imageUrl", dataUrl);
+    reader.onload = ev => {
+      set("imageUrl", ev.target?.result as string);
       setUploading(false);
     };
     reader.onerror = () => {
@@ -231,7 +261,7 @@ function GigsTab() {
             <textarea value={form.description} onChange={e => set("description", e.target.value)} placeholder="Kurze Beschreibung des Auftritts…" style={{ minHeight: "80px" }} />
           </div>
 
-          {/* Image upload */}
+          {/* Image upload — stored as base64 data URL */}
           <div className="f-group">
             <label>Bild</label>
             <label className="img-upload-zone" style={{ cursor: uploading ? "wait" : "none" }}>
@@ -257,7 +287,7 @@ function GigsTab() {
                         <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M17 8l-5-5-5 5M12 3v12"/>
                       </svg>
                       <span>Bild hier ablegen oder klicken</span>
-                      <small>JPG, PNG, WebP — max. 8 MB</small>
+                      <small>JPG, PNG, WebP — max. 2 MB</small>
                     </>
                   )}
                 </div>
@@ -314,18 +344,109 @@ function GigsTab() {
   );
 }
 
-/* ── Main Panel ── */
-export default function AdminPanel() {
-  const [loggedIn, setLoggedIn] = useState(false);
-  const [tab, setTab]           = useState<"cal" | "gigs">("cal");
+/* ── Contacts Tab ── */
+function ContactsTab({ token }: { token: string }) {
+  const [entries, setEntries] = useState<ContactEntry[]>([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (sessionStorage.getItem("fidden_admin") === "1") setLoggedIn(true);
+    fetch("/api/contact", { headers: { Authorization: `Bearer ${token}` } })
+      .then(r => r.json())
+      .then(data => { setEntries(data); setLoading(false); })
+      .catch(() => setLoading(false));
+  }, [token]);
+
+  const markRead = async (id: string) => {
+    await fetch("/api/contact", {
+      method:  "PATCH",
+      headers: authHeader(token),
+      body:    JSON.stringify({ id }),
+    });
+    setEntries(prev => prev.map(e => e.id === id ? { ...e, read: true } : e));
+  };
+
+  if (loading) {
+    return (
+      <div className="sc-loading">
+        <span className="sc-loading-dot" />
+        Nachrichten werden geladen…
+      </div>
+    );
+  }
+
+  if (entries.length === 0) {
+    return <div className="gig-empty-state">Noch keine Nachrichten eingegangen.</div>;
+  }
+
+  return (
+    <div style={{ display: "flex", flexDirection: "column", gap: "2px" }}>
+      {entries.map(e => (
+        <div
+          key={e.id}
+          style={{
+            background: e.read ? "var(--surface)" : "var(--surface-2)",
+            border: `1px solid ${e.read ? "rgba(255,255,255,.06)" : "var(--accent)"}`,
+            padding: "1.25rem 1.5rem",
+            display: "flex",
+            flexDirection: "column",
+            gap: ".6rem",
+          }}
+        >
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: "1rem", flexWrap: "wrap" }}>
+            <div>
+              <div style={{ fontSize: ".82rem", fontWeight: 700, letterSpacing: ".06em" }}>{e.name}</div>
+              <div style={{ fontSize: ".6rem", color: "var(--muted)", letterSpacing: ".15em", marginTop: ".2rem" }}>
+                <a href={`mailto:${e.email}`} style={{ color: "var(--accent)" }}>{e.email}</a>
+                {e.tel && <span> · {e.tel}</span>}
+              </div>
+            </div>
+            <div style={{ display: "flex", alignItems: "center", gap: ".75rem", flexShrink: 0 }}>
+              <span style={{ fontSize: ".55rem", color: "var(--muted)", letterSpacing: ".1em", textTransform: "uppercase" }}>
+                {new Date(e.ts).toLocaleDateString("de-DE", { day: "2-digit", month: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit" })}
+              </span>
+              {!e.read && (
+                <button className="logout-btn" style={{ fontSize: ".55rem", padding: ".4rem .8rem" }} onClick={() => markRead(e.id)}>
+                  Als gelesen markieren
+                </button>
+              )}
+            </div>
+          </div>
+          <p style={{ fontSize: ".75rem", color: "rgba(240,240,240,.8)", lineHeight: 1.7, whiteSpace: "pre-wrap" }}>{e.msg}</p>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+/* ── Main Panel ── */
+export default function AdminPanel() {
+  const [token,    setToken]    = useState<string | null>(null);
+  const [tab,      setTab]      = useState<"cal" | "gigs" | "contacts">("cal");
+  const [unread,   setUnread]   = useState(0);
+
+  useEffect(() => {
+    const stored = sessionStorage.getItem("fidden_admin_token");
+    if (stored) setToken(stored);
   }, []);
 
-  const logout = () => { sessionStorage.removeItem("fidden_admin"); setLoggedIn(false); };
+  useEffect(() => {
+    if (!token) return;
+    fetch("/api/contact", { headers: { Authorization: `Bearer ${token}` } })
+      .then(r => r.ok ? r.json() : [])
+      .then((data: ContactEntry[]) => setUnread(data.filter(e => !e.read).length))
+      .catch(() => {});
+  }, [token]);
 
-  if (!loggedIn) return <Login onLogin={() => setLoggedIn(true)} />;
+  const logout = () => {
+    sessionStorage.removeItem("fidden_admin_token");
+    setToken(null);
+  };
+
+  const handleLogin = (t: string) => {
+    setToken(t);
+  };
+
+  if (!token) return <Login onLogin={handleLogin} />;
 
   return (
     <div>
@@ -344,10 +465,14 @@ export default function AdminPanel() {
         <button className={`admin-tab-btn${tab === "gigs" ? " active" : ""}`} onClick={() => setTab("gigs")}>
           Auftritte
         </button>
+        <button className={`admin-tab-btn${tab === "contacts" ? " active" : ""}`} onClick={() => { setTab("contacts"); setUnread(0); }}>
+          Nachrichten{unread > 0 && <span className="contact-badge">{unread}</span>}
+        </button>
       </div>
 
-      {tab === "cal"  && <CalendarTab />}
-      {tab === "gigs" && <GigsTab />}
+      {tab === "cal"      && <CalendarTab token={token} />}
+      {tab === "gigs"     && <GigsTab token={token} />}
+      {tab === "contacts" && <ContactsTab token={token} />}
     </div>
   );
 }

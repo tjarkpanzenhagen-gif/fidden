@@ -23,16 +23,22 @@ export default function Nav() {
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
+  useEffect(() => {
+    document.body.style.overflow = open ? "hidden" : "";
+    return () => { document.body.style.overflow = ""; };
+  }, [open]);
+
   const close = () => setOpen(false);
 
   return (
     <>
       <div className={`mobile-overlay${open ? " open" : ""}`}>
         <Link href="#auftritte"      onClick={close}>Auftritte</Link>
+        <Link href="#sounds"         onClick={close}>Sounds</Link>
         <Link href="#gallery"        onClick={close}>Galerie</Link>
         <Link href="#verfuegbarkeit" onClick={close}>Verfügbar</Link>
         <Link href="#kontakt"        onClick={close}>Kontakt</Link>
-        <a href={SC_URL} target="_blank" rel="noopener noreferrer" onClick={close}>SoundCloud</a>
+        <a href={SC_URL} target="_blank" rel="noopener noreferrer" onClick={close}>SoundCloud ↗</a>
       </div>
 
       <nav className={`nav${scrolled ? " scrolled" : ""}`}>
@@ -41,6 +47,7 @@ export default function Nav() {
         </Link>
         <ul className="nav-links">
           <li><Link href="#auftritte">Auftritte</Link></li>
+          <li><Link href="#sounds">Sounds</Link></li>
           <li><Link href="#gallery">Galerie</Link></li>
           <li><Link href="#verfuegbarkeit">Verfügbar</Link></li>
           <li><Link href="#kontakt">Kontakt</Link></li>
@@ -58,7 +65,8 @@ export default function Nav() {
         </ul>
         <button
           className={`hamburger${open ? " open" : ""}`}
-          aria-label="Menu"
+          aria-label={open ? "Menü schließen" : "Menü öffnen"}
+          aria-expanded={open}
           onClick={() => setOpen(o => !o)}
         >
           <span /><span /><span />

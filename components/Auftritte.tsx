@@ -17,7 +17,7 @@ function GigCard({ gig, index }: { gig: Gig; index: number }) {
           <div className="gig-card-bg-gradient" />
         </>
       )}
-      <div className="gig-card-num">0{index + 1}</div>
+      <div className="gig-card-num">{String(index + 1).padStart(2, "0")}</div>
       <div className="gig-card-content">
         <div className="gig-card-date">{day} {month}</div>
         <span className="gig-card-date-sub">{year}</span>
