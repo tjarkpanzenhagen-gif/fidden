@@ -488,6 +488,36 @@ a, button, input, select, textarea, label { touch-action: manipulation; }
   text-transform: uppercase;
 }
 
+/* Past gig cards */
+.gig-card-past {
+  opacity: 0.35;
+  filter: grayscale(1);
+  transition: opacity .3s, filter .3s;
+}
+.gig-card-past:hover {
+  opacity: 0.5;
+  filter: grayscale(.7);
+}
+.gig-card-past .gig-card-bg {
+  filter: brightness(.18) saturate(0) !important;
+}
+.gig-card-past:hover .gig-card-bg {
+  filter: brightness(.22) saturate(0) !important;
+  transform: none !important;
+}
+.gig-past-label {
+  position: absolute;
+  top: 1.5rem;
+  left: 2rem;
+  font-size: .48rem;
+  letter-spacing: .3em;
+  color: var(--muted);
+  text-transform: uppercase;
+  border: 1px solid rgba(255,255,255,.12);
+  padding: .2rem .55rem;
+  z-index: 2;
+}
+
 /* ─── GALLERY ─── */
 .gallery-bg { background: var(--bg); }
 .gallery-grid {
