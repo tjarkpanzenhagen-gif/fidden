@@ -178,13 +178,31 @@ export default function AvailabilityCalendar() {
                 />
               </div>
             </div>
+            <div className="f-row">
+              <div className="f-group">
+                <label htmlFor="req-tel">Telefon *</label>
+                <input
+                  id="req-tel" name="tel" type="tel"
+                  placeholder="+49 …"
+                  required disabled={requesting}
+                />
+              </div>
+              <div className="f-group">
+                <label htmlFor="req-instagram">Instagram</label>
+                <input
+                  id="req-instagram" name="instagram" type="text"
+                  placeholder="@handle"
+                  disabled={requesting}
+                />
+              </div>
+            </div>
             <div className="f-group">
-              <label htmlFor="req-msg">Nachricht</label>
+              <label htmlFor="req-msg">Nachricht *</label>
               <textarea
                 id="req-msg" name="msg"
                 placeholder="Event-Details, Location, Fragen…"
                 style={{ minHeight: "80px" }}
-                disabled={requesting}
+                required disabled={requesting}
               />
             </div>
             {reqErr && <p className="login-error" style={{ marginTop: 0 }}>{reqErr}</p>}

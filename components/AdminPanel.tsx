@@ -471,7 +471,8 @@ function ContactsTab({ token }: { token: string }) {
                 <div className="contact-card-name">{e.name}</div>
                 <div className="contact-card-sub">
                   <a href={`mailto:${e.email}`} className="contact-card-email">{e.email}</a>
-                  {e.tel && <span> · {e.tel}</span>}
+                  {e.tel && <span> · <a href={`tel:${e.tel}`} style={{ color: "inherit" }}>{e.tel}</a></span>}
+                  {e.instagram && <span> · {e.instagram}</span>}
                 </div>
               </div>
               <div className="contact-card-actions">

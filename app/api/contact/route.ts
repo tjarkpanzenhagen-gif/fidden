@@ -7,6 +7,7 @@ export interface ContactEntry {
   name: string;
   email: string;
   tel?: string;
+  instagram?: string;
   msg: string;
   read: boolean;
   type?: "general" | "booking_request";
@@ -25,19 +26,27 @@ async function getRedis() {
 export async function POST(req: Request) {
   try {
     const body = await req.json();
-    const { name, email, tel, msg, type, requestDate } = body;
+    const { name, email, tel, instagram, msg, type, requestDate } = body;
+    const isBooking = type === "booking_request" && typeof requestDate === "string" && requestDate.match(/^\d{4}-\d{2}-\d{2}$/);
+
     if (!name?.trim() || !email?.trim()) {
       return NextResponse.json({ error: "Pflichtfelder fehlen." }, { status: 400 });
     }
-    const isBooking = type === "booking_request" && typeof requestDate === "string" && requestDate.match(/^\d{4}-\d{2}-\d{2}$/);
+    if (isBooking && !tel?.trim()) {
+      return NextResponse.json({ error: "Telefonnummer ist für Buchungsanfragen Pflicht." }, { status: 400 });
+    }
+    if (isBooking && !msg?.trim()) {
+      return NextResponse.json({ error: "Bitte beschreibe dein Event kurz." }, { status: 400 });
+    }
 
     const entry: ContactEntry = {
-      id:    crypto.randomUUID(),
-      ts:    Date.now(),
-      name:  String(name).slice(0, 200),
-      email: String(email).slice(0, 200),
-      tel:   tel ? String(tel).slice(0, 50) : undefined,
-      msg:   msg ? String(msg).slice(0, 2000) : "",
+      id:        crypto.randomUUID(),
+      ts:        Date.now(),
+      name:      String(name).slice(0, 200),
+      email:     String(email).slice(0, 200),
+      tel:       tel       ? String(tel).slice(0, 50)        : undefined,
+      instagram: instagram ? String(instagram).slice(0, 100) : undefined,
+      msg:       msg ? String(msg).slice(0, 2000) : "",
       read:  false,
       ...(isBooking && {
         type: "booking_request",
