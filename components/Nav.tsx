@@ -32,7 +32,8 @@ export default function Nav() {
 
   return (
     <>
-      <div className={`mobile-overlay${open ? " open" : ""}`}>
+      <div className={`mobile-overlay${open ? " open" : ""}`} role="dialog" aria-modal="true" aria-label="Navigation">
+        <button className="mobile-overlay-close" onClick={close} aria-label="Menü schließen">✕</button>
         <Link href="#auftritte"      onClick={close}>Auftritte</Link>
         <Link href="#sounds"         onClick={close}>Sounds</Link>
         <Link href="#gallery"        onClick={close}>Galerie</Link>
