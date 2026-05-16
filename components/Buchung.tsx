@@ -78,7 +78,7 @@ export default function Buchung() {
                 <p>Danke — wir melden uns innerhalb von 48&nbsp;Stunden. Keep it dark.</p>
               </div>
             ) : (
-              <form ref={formRef} className="booking-form" onSubmit={handleSubmit}>
+              <form className="booking-form" onSubmit={handleSubmit}>
                 <div className="f-row">
                   <div className="f-group">
                     <label htmlFor="f-name">Name *</label>
