@@ -384,20 +384,40 @@ function ContactsTab({ token }: { token: string }) {
       .catch(() => setLoading(false));
   }, [token]);
 
-  const markRead = async (id: string) => {
+  const patchContact = async (id: string, body: Record<string, string>) => {
     await authedFetch("/api/contact", {
       method:  "PATCH",
       headers: { "Content-Type": "application/json" },
-      body:    JSON.stringify({ id }),
+      body:    JSON.stringify({ id, ...body }),
       token,
     });
+  };
+
+  const markRead = async (id: string) => {
+    await patchContact(id, {});
     setEntries(prev => prev.map(e => e.id === id ? { ...e, read: true } : e));
+  };
+
+  const acceptRequest = async (id: string) => {
+    await patchContact(id, { action: "accept" });
+    setEntries(prev => prev.map(e => e.id === id ? { ...e, status: "accepted", read: true } : e));
+  };
+
+  const declineRequest = async (id: string) => {
+    await patchContact(id, { action: "decline" });
+    setEntries(prev => prev.map(e => e.id === id ? { ...e, status: "declined", read: true } : e));
   };
 
   const clearAll = async () => {
     if (!confirm("Alle Nachrichten löschen?")) return;
     await authedFetch("/api/contact", { method: "DELETE", headers: { "Content-Type": "application/json" }, token });
     setEntries([]);
+  };
+
+  const formatDate = (iso: string) => {
+    const [y, m, d] = iso.split("-");
+    const months = ["Jan","Feb","Mär","Apr","Mai","Jun","Jul","Aug","Sep","Okt","Nov","Dez"];
+    return `${d}. ${months[parseInt(m) - 1]} ${y}`;
   };
 
   if (loading) {
@@ -420,40 +440,71 @@ function ContactsTab({ token }: { token: string }) {
           Alle Nachrichten löschen
         </button>
       </div>
-      {entries.map(e => (
-        <div
-          key={e.id}
-          style={{
-            background: e.read ? "var(--surface)" : "var(--surface-2)",
-            border: `1px solid ${e.read ? "rgba(255,255,255,.06)" : "var(--accent)"}`,
-            padding: "1.25rem 1.5rem",
-            display: "flex",
-            flexDirection: "column",
-            gap: ".6rem",
-          }}
-        >
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: "1rem", flexWrap: "wrap" }}>
-            <div>
-              <div style={{ fontSize: ".82rem", fontWeight: 700, letterSpacing: ".06em" }}>{e.name}</div>
-              <div style={{ fontSize: ".6rem", color: "var(--muted)", letterSpacing: ".15em", marginTop: ".2rem" }}>
-                <a href={`mailto:${e.email}`} style={{ color: "var(--accent)" }}>{e.email}</a>
-                {e.tel && <span> · {e.tel}</span>}
+      {entries.map(e => {
+        const isBooking = e.type === "booking_request";
+        const isPending = isBooking && e.status === "pending";
+        const isAccepted = isBooking && e.status === "accepted";
+        const isDeclined = isBooking && e.status === "declined";
+
+        return (
+          <div
+            key={e.id}
+            className={`contact-card${isBooking ? " contact-card-booking" : ""}${!e.read ? " contact-card-unread" : ""}`}
+          >
+            {/* Booking badge row */}
+            {isBooking && (
+              <div className="contact-booking-header">
+                <span className="contact-booking-label">// BUCHUNGSANFRAGE</span>
+                {e.requestDate && (
+                  <span className={`contact-booking-date${isAccepted ? " accepted" : isDeclined ? " declined" : ""}`}>
+                    {formatDate(e.requestDate)}
+                  </span>
+                )}
+                {isAccepted && <span className="contact-status accepted">✓ Angenommen</span>}
+                {isDeclined && <span className="contact-status declined">✕ Abgelehnt</span>}
+              </div>
+            )}
+
+            {/* Sender info + timestamp */}
+            <div className="contact-card-meta">
+              <div>
+                <div className="contact-card-name">{e.name}</div>
+                <div className="contact-card-sub">
+                  <a href={`mailto:${e.email}`} className="contact-card-email">{e.email}</a>
+                  {e.tel && <span> · {e.tel}</span>}
+                </div>
+              </div>
+              <div className="contact-card-actions">
+                <span className="contact-card-ts">
+                  {new Date(e.ts).toLocaleDateString("de-DE", { day: "2-digit", month: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit" })}
+                </span>
+                {!e.read && !isBooking && (
+                  <button className="logout-btn" style={{ fontSize: ".55rem", padding: ".4rem .8rem" }} onClick={() => markRead(e.id)}>
+                    Als gelesen markieren
+                  </button>
+                )}
               </div>
             </div>
-            <div style={{ display: "flex", alignItems: "center", gap: ".75rem", flexShrink: 0 }}>
-              <span style={{ fontSize: ".55rem", color: "var(--muted)", letterSpacing: ".1em", textTransform: "uppercase" }}>
-                {new Date(e.ts).toLocaleDateString("de-DE", { day: "2-digit", month: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit" })}
-              </span>
-              {!e.read && (
-                <button className="logout-btn" style={{ fontSize: ".55rem", padding: ".4rem .8rem" }} onClick={() => markRead(e.id)}>
-                  Als gelesen markieren
+
+            {/* Message */}
+            {e.msg && (
+              <p className="contact-card-msg">{e.msg}</p>
+            )}
+
+            {/* Accept / Decline for pending booking requests */}
+            {isPending && (
+              <div className="contact-booking-btns">
+                <button className="booking-accept-btn" onClick={() => acceptRequest(e.id)}>
+                  ✓ Annehmen — Tag wird gesperrt
                 </button>
-              )}
-            </div>
+                <button className="booking-decline-btn" onClick={() => declineRequest(e.id)}>
+                  ✕ Ablehnen
+                </button>
+              </div>
+            )}
           </div>
-          <p style={{ fontSize: ".75rem", color: "rgba(240,240,240,.8)", lineHeight: 1.7, whiteSpace: "pre-wrap" }}>{e.msg}</p>
-        </div>
-      ))}
+        );
+      })}
     </div>
   );
 }

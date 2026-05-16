@@ -9,6 +9,9 @@ export interface ContactEntry {
   tel?: string;
   msg: string;
   read: boolean;
+  type?: "general" | "booking_request";
+  requestDate?: string; // ISO date, only for booking_request
+  status?: "pending" | "accepted" | "declined";
 }
 
 async function getRedis() {
@@ -22,23 +25,38 @@ async function getRedis() {
 export async function POST(req: Request) {
   try {
     const body = await req.json();
-    const { name, email, tel, msg } = body;
-    if (!name?.trim() || !email?.trim() || !msg?.trim()) {
+    const { name, email, tel, msg, type, requestDate } = body;
+    if (!name?.trim() || !email?.trim()) {
       return NextResponse.json({ error: "Pflichtfelder fehlen." }, { status: 400 });
     }
+    const isBooking = type === "booking_request" && typeof requestDate === "string" && requestDate.match(/^\d{4}-\d{2}-\d{2}$/);
+
     const entry: ContactEntry = {
       id:    crypto.randomUUID(),
       ts:    Date.now(),
       name:  String(name).slice(0, 200),
       email: String(email).slice(0, 200),
       tel:   tel ? String(tel).slice(0, 50) : undefined,
-      msg:   String(msg).slice(0, 2000),
+      msg:   msg ? String(msg).slice(0, 2000) : "",
       read:  false,
+      ...(isBooking && {
+        type: "booking_request",
+        requestDate: String(requestDate),
+        status: "pending",
+      }),
     };
+
     const redis = await getRedis();
     if (redis) {
       const existing = (await redis.get<ContactEntry[]>("fidden_contacts")) ?? [];
       await redis.set("fidden_contacts", [...existing, entry]);
+
+      if (isBooking && entry.requestDate) {
+        const pendingList = (await redis.get<string[]>("fidden_pending")) ?? [];
+        if (!pendingList.includes(entry.requestDate)) {
+          await redis.set("fidden_pending", [...pendingList, entry.requestDate]);
+        }
+      }
     }
     return NextResponse.json({ ok: true });
   } catch {
@@ -63,14 +81,38 @@ export async function PATCH(req: Request) {
     return NextResponse.json({ ok: false }, { status: 401 });
   }
   const body = await req.json();
-  const { id } = body;
+  const { id, action } = body;
   if (typeof id !== "string" || !id) {
     return NextResponse.json({ ok: false, error: "Ungültige ID" }, { status: 400 });
   }
+
   const redis = await getRedis();
   if (!redis) return NextResponse.json({ ok: false }, { status: 503 });
-  const data = (await redis.get<ContactEntry[]>("fidden_contacts")) ?? [];
-  const updated = data.map(e => e.id === id ? { ...e, read: true } : e);
+
+  const contacts = (await redis.get<ContactEntry[]>("fidden_contacts")) ?? [];
+  const entry = contacts.find(e => e.id === id);
+
+  if (action === "accept" || action === "decline") {
+    const status = action === "accept" ? "accepted" : "declined";
+    const updated = contacts.map(e => e.id === id ? { ...e, status, read: true } : e);
+    await redis.set("fidden_contacts", updated);
+
+    if (entry?.requestDate) {
+      // Always remove from pending
+      const pendingList = (await redis.get<string[]>("fidden_pending")) ?? [];
+      await redis.set("fidden_pending", pendingList.filter(d => d !== entry.requestDate));
+
+      if (action === "accept") {
+        // Remove from bookable — day is now booked
+        const bookings = (await redis.get<string[]>("fidden_bookings")) ?? [];
+        await redis.set("fidden_bookings", bookings.filter(d => d !== entry.requestDate));
+      }
+    }
+    return NextResponse.json({ ok: true });
+  }
+
+  // Default: mark as read
+  const updated = contacts.map(e => e.id === id ? { ...e, read: true } : e);
   await redis.set("fidden_contacts", updated);
   return NextResponse.json({ ok: true });
 }
@@ -83,5 +125,6 @@ export async function DELETE(req: Request) {
   const redis = await getRedis();
   if (!redis) return NextResponse.json({ ok: false }, { status: 503 });
   await redis.set("fidden_contacts", []);
+  await redis.set("fidden_pending", []);
   return NextResponse.json({ ok: true });
 }

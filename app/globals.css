@@ -909,6 +909,11 @@ a, button, input, select, textarea, label { touch-action: manipulation; }
   color: var(--bg);
   font-weight: 700;
 }
+.mini-cal-day.pending {
+  background: rgba(200,160,50,.18);
+  border: 1px solid rgba(215,175,60,.5);
+  color: rgba(215,185,80,.85);
+}
 .mini-cal-legend {
   display: flex;
   gap: .9rem;
@@ -934,6 +939,7 @@ a, button, input, select, textarea, label { touch-action: manipulation; }
   flex-shrink: 0;
 }
 .mini-legend-dot.bookable { background: var(--accent); border-color: var(--accent); }
+.mini-legend-dot.pending  { background: rgba(200,160,50,.55); border-color: rgba(215,175,60,.7); }
 .mini-legend-dot.past     { background: transparent; border-color: var(--border); opacity: .35; }
 .mini-cal-hint {
   margin-top: .6rem;
@@ -1037,6 +1043,16 @@ a, button, input, select, textarea, label { touch-action: manipulation; }
   border-color: var(--accent);
 }
 .cal-day.bookable:hover { background: rgba(255,255,255,.85); }
+.cal-day.pending {
+  background: rgba(200,160,50,.12);
+  border-color: rgba(215,175,60,.45);
+  color: rgba(215,185,80,.9);
+  cursor: default;
+}
+.cal-day.pending:hover {
+  background: rgba(200,160,50,.16);
+  border-color: rgba(215,175,60,.6);
+}
 .cal-day.today { border-color: var(--muted); }
 
 .admin-actions {
@@ -1088,6 +1104,7 @@ a, button, input, select, textarea, label { touch-action: manipulation; }
   border-radius: 50%;
 }
 .legend-dot.bookable { background: var(--accent); }
+.legend-dot.pending  { background: rgba(200,160,50,.55); border: 1px solid rgba(215,175,60,.7); }
 .legend-dot.free     { background: var(--surface); border: 1px solid var(--border); }
 
 .avail-cta {
@@ -1098,13 +1115,35 @@ a, button, input, select, textarea, label { touch-action: manipulation; }
   display: none;
 }
 .avail-cta.show { display: block; }
+.avail-cta-date-label {
+  font-size: .58rem;
+  letter-spacing: .2em;
+  color: rgba(215,175,60,.8);
+  margin-bottom: .4rem;
+  text-transform: uppercase;
+}
 .avail-cta-title {
   font-family: var(--font-bebas), 'Bebas Neue', sans-serif;
   font-size: 1.8rem;
   letter-spacing: .06em;
+  margin-bottom: .75rem;
+}
+.avail-cta-hint { font-size: .72rem; color: var(--muted); margin-bottom: 1.25rem; }
+.avail-request-form { margin-top: 0; }
+.request-success {
+  padding: 1.5rem;
+  border: 1px solid rgba(215,175,60,.3);
+  background: rgba(215,175,60,.06);
+  margin-top: .5rem;
+}
+.request-success strong {
+  display: block;
+  font-size: .75rem;
+  letter-spacing: .18em;
+  color: rgba(215,185,80,.9);
   margin-bottom: .5rem;
 }
-.avail-cta p { font-size: .72rem; color: var(--muted); margin-bottom: 1.5rem; }
+.request-success p { font-size: .7rem; color: var(--muted); margin: 0; }
 
 /* ─── ADMIN TABS ─── */
 .admin-header {
@@ -1167,6 +1206,100 @@ a, button, input, select, textarea, label { touch-action: manipulation; }
   margin-left: .5rem;
   vertical-align: middle;
 }
+
+/* ─── Contact cards ─── */
+.contact-card {
+  background: var(--surface);
+  border: 1px solid rgba(255,255,255,.06);
+  padding: 1.25rem 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: .6rem;
+  margin-bottom: 2px;
+}
+.contact-card.contact-card-unread { border-color: var(--accent); }
+.contact-card.contact-card-booking {
+  border-color: rgba(215,175,60,.3);
+  background: rgba(200,160,50,.04);
+}
+.contact-card.contact-card-booking.contact-card-unread { border-color: rgba(215,175,60,.7); }
+.contact-booking-header {
+  display: flex;
+  align-items: center;
+  gap: .75rem;
+  flex-wrap: wrap;
+  padding-bottom: .6rem;
+  border-bottom: 1px solid rgba(215,175,60,.15);
+}
+.contact-booking-label {
+  font-size: .52rem;
+  letter-spacing: .2em;
+  color: rgba(215,185,80,.7);
+  text-transform: uppercase;
+}
+.contact-booking-date {
+  font-family: var(--font-bebas), 'Bebas Neue', sans-serif;
+  font-size: 1.1rem;
+  letter-spacing: .06em;
+  color: rgba(215,185,80,.9);
+}
+.contact-booking-date.accepted { color: rgba(140,210,120,.9); }
+.contact-booking-date.declined { color: var(--muted); text-decoration: line-through; }
+.contact-status {
+  font-size: .52rem;
+  letter-spacing: .15em;
+  text-transform: uppercase;
+  margin-left: auto;
+}
+.contact-status.accepted { color: rgba(140,210,120,.85); }
+.contact-status.declined { color: var(--muted); }
+.contact-card-meta {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+.contact-card-name   { font-size: .82rem; font-weight: 700; letter-spacing: .06em; }
+.contact-card-sub    { font-size: .6rem; color: var(--muted); letter-spacing: .15em; margin-top: .2rem; }
+.contact-card-email  { color: var(--accent); }
+.contact-card-actions { display: flex; align-items: center; gap: .75rem; flex-shrink: 0; }
+.contact-card-ts     { font-size: .55rem; color: var(--muted); letter-spacing: .1em; text-transform: uppercase; }
+.contact-card-msg    { font-size: .75rem; color: rgba(240,240,240,.8); line-height: 1.7; white-space: pre-wrap; margin: 0; }
+.contact-booking-btns {
+  display: flex;
+  gap: .75rem;
+  flex-wrap: wrap;
+  margin-top: .25rem;
+  padding-top: .75rem;
+  border-top: 1px solid rgba(215,175,60,.1);
+}
+.booking-accept-btn {
+  font-family: var(--font-bebas), 'Bebas Neue', sans-serif;
+  font-size: .72rem;
+  letter-spacing: .12em;
+  padding: .6rem 1.2rem;
+  background: rgba(140,210,120,.12);
+  border: 1px solid rgba(140,210,120,.4);
+  color: rgba(160,230,140,.9);
+  cursor: pointer;
+  transition: background .15s, border-color .15s;
+  touch-action: manipulation;
+}
+.booking-accept-btn:hover { background: rgba(140,210,120,.2); border-color: rgba(140,210,120,.6); }
+.booking-decline-btn {
+  font-family: var(--font-bebas), 'Bebas Neue', sans-serif;
+  font-size: .72rem;
+  letter-spacing: .12em;
+  padding: .6rem 1.2rem;
+  background: transparent;
+  border: 1px solid rgba(255,255,255,.12);
+  color: var(--muted);
+  cursor: pointer;
+  transition: background .15s, border-color .15s;
+  touch-action: manipulation;
+}
+.booking-decline-btn:hover { background: rgba(255,255,255,.05); border-color: rgba(255,255,255,.2); }
 
 /* Gig manager layout */
 .gig-manager {

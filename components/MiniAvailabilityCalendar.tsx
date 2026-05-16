@@ -3,13 +3,14 @@
 import { useState, useEffect } from "react";
 import { toISO, today } from "@/lib/bookings";
 
-const DAY_LABELS = ["Mo", "Di", "Mi", "Do", "Fr", "Sa", "So"];
+const DAY_LABELS  = ["Mo", "Di", "Mi", "Do", "Fr", "Sa", "So"];
 const MONTH_NAMES = ["Januar","Februar","März","April","Mai","Juni","Juli","August","September","Oktober","November","Dezember"];
 
 export default function MiniAvailabilityCalendar() {
   const [bookable, setBookable] = useState<string[]>([]);
+  const [pending,  setPending]  = useState<string[]>([]);
   const now = new Date();
-  const [year, setYear]   = useState(now.getFullYear());
+  const [year,  setYear]  = useState(now.getFullYear());
   const [month, setMonth] = useState(now.getMonth());
 
   useEffect(() => {
@@ -17,6 +18,10 @@ export default function MiniAvailabilityCalendar() {
       .then(r => r.json())
       .then(setBookable)
       .catch(() => setBookable([]));
+    fetch("/api/pending")
+      .then(r => r.json())
+      .then(setPending)
+      .catch(() => setPending([]));
   }, []);
 
   const prev = () => month === 0  ? (setMonth(11), setYear(y => y - 1)) : setMonth(m => m - 1);
@@ -32,7 +37,9 @@ export default function MiniAvailabilityCalendar() {
   for (let d = 1; d <= lastDay.getDate(); d++)
     days.push({ iso: toISO(new Date(year, month, d)), day: d });
 
-  const freeCount = bookable.filter(d => d >= todayISO && d.startsWith(`${year}-${String(month + 1).padStart(2, "0")}`)).length;
+  const freeCount = bookable.filter(d =>
+    d >= todayISO && d.startsWith(`${year}-${String(month + 1).padStart(2, "0")}`)
+  ).length;
 
   return (
     <div className="mini-cal">
@@ -48,17 +55,21 @@ export default function MiniAvailabilityCalendar() {
           if (!d) return <div className="mini-cal-day empty" key={`e${i}`} />;
           const isPast     = d.iso < todayISO;
           const isBookable = bookable.includes(d.iso);
+          const isPending  = pending.includes(d.iso);
           const isToday    = d.iso === todayISO;
           return (
             <div
               key={d.iso}
               className={[
                 "mini-cal-day",
-                isPast     ? "past"     : "",
-                isBookable ? "bookable" : "",
-                isToday    ? "today"    : "",
+                isPast                    ? "past"     : "",
+                isPending                 ? "pending"  : isBookable ? "bookable" : "",
+                isToday                   ? "today"    : "",
               ].filter(Boolean).join(" ")}
-              title={isBookable ? `${d.day}. ${MONTH_NAMES[month]} — Buchbar` : undefined}
+              title={
+                isPending  ? `Anfrage ausstehend` :
+                isBookable ? `${d.day}. ${MONTH_NAMES[month]} — Buchbar` : undefined
+              }
             >
               {d.day}
             </div>
@@ -69,6 +80,9 @@ export default function MiniAvailabilityCalendar() {
       <div className="mini-cal-legend">
         <span className="mini-legend-item">
           <span className="mini-legend-dot bookable" /> Buchbar
+        </span>
+        <span className="mini-legend-item">
+          <span className="mini-legend-dot pending" /> Anfrage
         </span>
         <span className="mini-legend-item">
           <span className="mini-legend-dot" /> Nicht verfügbar
@@ -83,7 +97,7 @@ export default function MiniAvailabilityCalendar() {
           {freeCount} {freeCount === 1 ? "freier Tag" : "freie Tage"} diesen Monat
         </p>
       )}
-      {bookable.length === 0 && (
+      {bookable.length === 0 && pending.length === 0 && (
         <p className="mini-cal-hint">Keine buchbaren Termine — bald wieder verfügbar.</p>
       )}
     </div>
