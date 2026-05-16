@@ -62,11 +62,26 @@ export async function PATCH(req: Request) {
   if (!(await verifyToken(token))) {
     return NextResponse.json({ ok: false }, { status: 401 });
   }
-  const { id } = await req.json();
+  const body = await req.json();
+  const { id } = body;
+  if (typeof id !== "string" || !id) {
+    return NextResponse.json({ ok: false, error: "Ungültige ID" }, { status: 400 });
+  }
   const redis = await getRedis();
   if (!redis) return NextResponse.json({ ok: false }, { status: 503 });
   const data = (await redis.get<ContactEntry[]>("fidden_contacts")) ?? [];
   const updated = data.map(e => e.id === id ? { ...e, read: true } : e);
   await redis.set("fidden_contacts", updated);
+  return NextResponse.json({ ok: true });
+}
+
+export async function DELETE(req: Request) {
+  const token = getAuthToken(req);
+  if (!(await verifyToken(token))) {
+    return NextResponse.json({ ok: false }, { status: 401 });
+  }
+  const redis = await getRedis();
+  if (!redis) return NextResponse.json({ ok: false }, { status: 503 });
+  await redis.set("fidden_contacts", []);
   return NextResponse.json({ ok: true });
 }

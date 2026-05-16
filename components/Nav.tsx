@@ -35,7 +35,6 @@ export default function Nav() {
       <div className={`mobile-overlay${open ? " open" : ""}`} role="dialog" aria-modal="true" aria-label="Navigation">
         <button className="mobile-overlay-close" onClick={close} aria-label="Menü schließen">✕</button>
         <Link href="#auftritte"      onClick={close}>Auftritte</Link>
-        <Link href="#sounds"         onClick={close}>Sounds</Link>
         <Link href="#gallery"        onClick={close}>Galerie</Link>
         <Link href="#verfuegbarkeit" onClick={close}>Verfügbar</Link>
         <Link href="#kontakt"        onClick={close}>Kontakt</Link>
@@ -48,7 +47,6 @@ export default function Nav() {
         </Link>
         <ul className="nav-links">
           <li><Link href="#auftritte">Auftritte</Link></li>
-          <li><Link href="#sounds">Sounds</Link></li>
           <li><Link href="#gallery">Galerie</Link></li>
           <li><Link href="#verfuegbarkeit">Verfügbar</Link></li>
           <li><Link href="#kontakt">Kontakt</Link></li>

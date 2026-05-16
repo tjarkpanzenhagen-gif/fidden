@@ -214,6 +214,11 @@ function GigsTab({ token }: { token: string }) {
     saveGigs(gigs.filter(g => g.id !== id));
   };
 
+  const clearAll = () => {
+    if (!confirm("Alle Auftritte löschen?")) return;
+    saveGigs([]);
+  };
+
   const cancelEdit = () => { setEditing(null); setForm(EMPTY_GIG); };
   const set = (k: keyof typeof form, v: string) => setForm(p => ({ ...p, [k]: v }));
 
@@ -325,7 +330,14 @@ function GigsTab({ token }: { token: string }) {
 
       {/* List */}
       <div>
-        <span className="gig-manager-title">Alle Auftritte ({gigs.length})</span>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: ".5rem" }}>
+          <span className="gig-manager-title">Alle Auftritte ({gigs.length})</span>
+          {gigs.length > 0 && (
+            <button className="logout-btn" style={{ fontSize: ".55rem", padding: ".4rem .8rem" }} onClick={clearAll}>
+              Alle löschen
+            </button>
+          )}
+        </div>
         {gigs.length === 0 ? (
           <div className="gig-empty-state">Noch keine Auftritte eingetragen.</div>
         ) : (
@@ -379,6 +391,12 @@ function ContactsTab({ token }: { token: string }) {
     setEntries(prev => prev.map(e => e.id === id ? { ...e, read: true } : e));
   };
 
+  const clearAll = async () => {
+    if (!confirm("Alle Nachrichten löschen?")) return;
+    await authedFetch("/api/contact", { method: "DELETE", headers: { "Content-Type": "application/json" }, token });
+    setEntries([]);
+  };
+
   if (loading) {
     return (
       <div className="sc-loading">
@@ -394,6 +412,11 @@ function ContactsTab({ token }: { token: string }) {
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: "2px" }}>
+      <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: ".5rem" }}>
+        <button className="logout-btn" style={{ fontSize: ".55rem", padding: ".4rem .8rem" }} onClick={clearAll}>
+          Alle Nachrichten löschen
+        </button>
+      </div>
       {entries.map(e => (
         <div
           key={e.id}
