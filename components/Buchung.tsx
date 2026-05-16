@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState } from "react";
 import RevealSection from "./RevealSection";
 import MiniAvailabilityCalendar from "./MiniAvailabilityCalendar";
 
@@ -8,7 +8,6 @@ export default function Buchung() {
   const [submitted, setSubmitted] = useState(false);
   const [loading,   setLoading]   = useState(false);
   const [error,     setError]     = useState("");
-  const formRef = useRef<HTMLFormElement>(null);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

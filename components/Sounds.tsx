@@ -124,8 +124,8 @@ export default function Sounds() {
   };
 
   return (
-    <section className="section sounds-bg" id="sounds">
-      {/* Off-screen iframe with real dimensions so browsers fully process it */}
+    <section className="section sounds-bg" id="sounds" style={{ position: "relative", overflow: "hidden" }}>
+      {/* Off-screen iframe — position:relative on section prevents iOS horizontal scroll */}
       <iframe
         ref={iframeRef}
         src={SC_WIDGET_URL}

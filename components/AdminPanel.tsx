@@ -17,6 +17,19 @@ function authHeader(token: string) {
   return { "Content-Type": "application/json", "Authorization": `Bearer ${token}` };
 }
 
+let onExpired: (() => void) | null = null;
+
+async function authedFetch(url: string, init: RequestInit & { token: string }) {
+  const { token, ...rest } = init;
+  const headers = { ...(rest.headers as Record<string, string> ?? {}), "Authorization": `Bearer ${token}` };
+  const res = await fetch(url, { ...rest, headers });
+  if (res.status === 401) {
+    sessionStorage.removeItem("fidden_admin_token");
+    onExpired?.();
+  }
+  return res;
+}
+
 /* ── Login ── */
 function Login({ onLogin }: { onLogin: (token: string) => void }) {
   const [u, setU] = useState("");
@@ -87,19 +100,19 @@ function CalendarTab({ token }: { token: string }) {
 
   const save = () => {
     setSaveErr("");
-    fetch("/api/bookings", { method: "POST", headers: authHeader(token), body: JSON.stringify(bookable) })
+    authedFetch("/api/bookings", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(bookable), token })
       .then(async r => {
-        if (!r.ok) throw new Error(r.status === 401 ? "Nicht autorisiert — bitte neu einloggen." : "");
+        if (!r.ok) throw new Error("Speichern fehlgeschlagen — Vercel KV noch nicht verbunden?");
         setSaved(true);
         setTimeout(() => setSaved(false), 2500);
       })
-      .catch(err => setSaveErr(err instanceof Error && err.message ? err.message : "Speichern fehlgeschlagen — Vercel KV noch nicht verbunden?"));
+      .catch(err => setSaveErr(err instanceof Error ? err.message : "Speichern fehlgeschlagen."));
   };
 
   const clear = () => {
     if (!confirm("Alle buchbaren Tage löschen?")) return;
     setBookable([]);
-    fetch("/api/bookings", { method: "POST", headers: authHeader(token), body: JSON.stringify([]) });
+    authedFetch("/api/bookings", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify([]), token });
   };
 
   const prev = () => month === 0 ? (setMonth(11), setYear(y => y - 1)) : setMonth(m => m - 1);
@@ -171,13 +184,13 @@ function GigsTab({ token }: { token: string }) {
   const saveGigs = (updated: Gig[]) => {
     setGigsState(updated);
     setSaveErr("");
-    fetch("/api/gigs", { method: "POST", headers: authHeader(token), body: JSON.stringify(updated) })
+    authedFetch("/api/gigs", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(updated), token })
       .then(async r => {
-        if (!r.ok) throw new Error(r.status === 401 ? "Nicht autorisiert — bitte neu einloggen." : await r.text());
+        if (!r.ok) throw new Error("Speichern fehlgeschlagen — Vercel KV noch nicht verbunden?");
         setSaved(true);
         setTimeout(() => setSaved(false), 2000);
       })
-      .catch(err => setSaveErr(err instanceof Error && err.message ? err.message : "Speichern fehlgeschlagen — Vercel KV noch nicht verbunden?"));
+      .catch(err => setSaveErr(err instanceof Error ? err.message : "Speichern fehlgeschlagen."));
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -350,17 +363,18 @@ function ContactsTab({ token }: { token: string }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetch("/api/contact", { headers: { Authorization: `Bearer ${token}` } })
-      .then(r => r.json())
-      .then(data => { setEntries(data); setLoading(false); })
+    authedFetch("/api/contact", { headers: { "Content-Type": "application/json" }, token })
+      .then(r => r.ok ? r.json() : [])
+      .then((data: ContactEntry[]) => { setEntries(data); setLoading(false); })
       .catch(() => setLoading(false));
   }, [token]);
 
   const markRead = async (id: string) => {
-    await fetch("/api/contact", {
+    await authedFetch("/api/contact", {
       method:  "PATCH",
-      headers: authHeader(token),
+      headers: { "Content-Type": "application/json" },
       body:    JSON.stringify({ id }),
+      token,
     });
     setEntries(prev => prev.map(e => e.id === id ? { ...e, read: true } : e));
   };
@@ -424,6 +438,12 @@ export default function AdminPanel() {
   const [tab,      setTab]      = useState<"cal" | "gigs" | "contacts">("cal");
   const [unread,   setUnread]   = useState(0);
 
+  const logout = () => {
+    sessionStorage.removeItem("fidden_admin_token");
+    onExpired = null;
+    setToken(null);
+  };
+
   useEffect(() => {
     const stored = sessionStorage.getItem("fidden_admin_token");
     if (stored) setToken(stored);
@@ -431,16 +451,14 @@ export default function AdminPanel() {
 
   useEffect(() => {
     if (!token) return;
+    onExpired = logout;
     fetch("/api/contact", { headers: { Authorization: `Bearer ${token}` } })
       .then(r => r.ok ? r.json() : [])
       .then((data: ContactEntry[]) => setUnread(data.filter(e => !e.read).length))
       .catch(() => {});
+    return () => { onExpired = null; };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [token]);
-
-  const logout = () => {
-    sessionStorage.removeItem("fidden_admin_token");
-    setToken(null);
-  };
 
   const handleLogin = (t: string) => {
     setToken(t);
