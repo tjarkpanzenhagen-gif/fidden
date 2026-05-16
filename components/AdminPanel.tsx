@@ -178,8 +178,11 @@ function GigsTab({ token }: { token: string }) {
   const [uploadErr, setUploadErr] = useState("");
 
   useEffect(() => {
-    fetch("/api/gigs").then(r => r.json()).then(setGigsState).catch(() => setGigsState(DEFAULT_GIGS));
-  }, []);
+    authedFetch("/api/gigs", { headers: { "Content-Type": "application/json" }, token })
+      .then(r => r.json())
+      .then(setGigsState)
+      .catch(() => setGigsState(DEFAULT_GIGS));
+  }, [token]);
 
   const saveGigs = (updated: Gig[]) => {
     setGigsState(updated);

@@ -33,13 +33,19 @@ function processGigs(gigs: Gig[]): { result: Gig[]; pruned: boolean } {
   return { result, pruned: filtered.length !== gigs.length };
 }
 
-export async function GET() {
+export async function GET(req: Request) {
+  const isAdmin = await verifyToken(getAuthToken(req));
   try {
     const redis = await getRedis();
     if (!redis) {
-      return NextResponse.json(processGigs(DEFAULT_GIGS).result);
+      const fallback = processGigs(DEFAULT_GIGS).result;
+      return NextResponse.json(isAdmin ? DEFAULT_GIGS : fallback);
     }
     const raw = await redis.get<Gig[]>("fidden_gigs");
+    if (isAdmin) {
+      // Return all gigs unfiltered so the admin can see and manage everything
+      return NextResponse.json(raw ?? DEFAULT_GIGS);
+    }
     const gigs = raw ?? DEFAULT_GIGS;
     const { result, pruned } = processGigs(gigs);
     if (pruned && raw) {
